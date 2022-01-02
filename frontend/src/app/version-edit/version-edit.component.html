@@ -1,0 +1,13 @@
+<div [formGroup]="versionForm">
+    <div class="form-group">
+        <label for="versionName">Version Name</label>
+        <input formControlName="versionName" type="text" class="form-control" id="versionName" required>
+        <small id="versionNameHelp" class="form-text text-muted">Required</small>
+    </div>
+    <div class="form-group">
+        <label for="versionURLs">URLs</label>
+        <textarea formControlName="versionURLs" type="text" class="form-control" id="versionURLs" required>
+        </textarea>
+        <small id="versionNameHelp" class="form-text text-muted">Required</small>
+    </div>
+</div>

@@ -1,0 +1,3 @@
+<button class="btn btn-primary" [routerLink]="['/applications', 'new']">Create Application</button>
+<button type="button" *ngFor="let app of apps" class="list-group-item list-group-item-action"
+    [routerLink]="['/applications', app.id]">{{app.name}}</button>

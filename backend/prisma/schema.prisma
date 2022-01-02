@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Application {
+  id       Int                   @id @default(autoincrement())
+  name     String                @unique
+  versions Application_Version[]
+}
+
+model Application_Version {
+  id                        Int                         @id @default(autoincrement())
+  name                      String                      @unique
+  application               Application                 @relation(fields: [applicationId], references: [id])
+  applicationId             Int
+  urls                      Application_URL[]
+  cookies                   ApplicationVersion_Cookie[]
+}
+
+model Application_URL {
+  id                   Int                 @id @default(autoincrement())
+  url                  String              @unique
+  applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id])
+  applicationVersionId Int
+}
+
+model CookieTemplate {
+  id                        Int                         @id @default(autoincrement())
+  nameRegex                 String
+  domain                    String
+  path                      String
+  httpOnly                  Boolean
+  hostOnly                  Boolean
+  secure                    Boolean
+  session                   Boolean
+  applicationVersions       ApplicationVersion_Cookie[]
+}
+
+model ApplicationVersion_Cookie {
+  id                   Int                 @id @default(autoincrement())
+  applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id])
+  applicationVersionId Int
+  cookieTemplate       CookieTemplate      @relation(fields: [cookieTemplateId], references: [id])
+  cookieTemplateId     Int
+}
+
+model CookieInstance {
+  id        Int     @id @default(autoincrement())
+  name      String
+  domain    String
+  path      String
+  httpOnly  Boolean
+  hostOnly  Boolean
+  secure    Boolean
+  session   Boolean
+  timestamp Int
+  duration  Float?
+  url       String
+}
