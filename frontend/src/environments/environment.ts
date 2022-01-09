@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  graphQLEndpoint: 'http://localhost:3333/graphql'
+  graphQLEndpoint: 'http://localhost:3000/graphql'
 };
 
 /*

@@ -1,24 +1,25 @@
-// Get references from dom
-const endpointValue = document.querySelector("#endpoint-value");
-const domains = document.querySelector("#domains-value");
+const endpointInput = document.querySelector("#endpoint-value");
+const domains = document.querySelector("#domains");
 
-// Load data from local storage and fill form
-chrome.storage.local.get('settings', (val)=>{
-    endpointValue.value = val.settings.endpointValue;
-    domains.value = val.settings.domains;
-});
+/**
+ * Update view from local storage data
+ */
+const updateView = () => {
+    getRemoteEndpoint().then(endpoint => {
+        endpointInput.value = endpoint;
+    })
 
-// Handle form submit
-document.querySelector("#settings-save").addEventListener("click", () => {
-    chrome.storage.local.set({
-        "settings": {
-            "endpointValue": endpointValue.value,
-            "domains" : domains.value
-        }
-    },
-        () => {
-            window.alert("Settings updated !");
-        })
-});
+    getLocalConfigurationData().then( config => {
+        domains.innerHTML = JSON.stringify(config);
+    })
+}
 
+document
+    .querySelector("#settings-save")
+    .addEventListener("click", async () => {
+        await setRemoteEndpoint(endpointInput.value);
+        await updateConfiguration();
+        updateView();
+    });
 
+updateView();

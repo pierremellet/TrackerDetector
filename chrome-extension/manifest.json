@@ -14,6 +14,7 @@
     ],
     "permissions": [
         "activeTab",
+        "alarms",
         "scripting",
         "tabs",
         "storage",
@@ -32,8 +33,7 @@
     ],
     "background": {
         "service_worker": "background.js",
-        "minimum_chrome_version": 92,
-        "type": "module"
+        "minimum_chrome_version": 92
     },
     "manifest_version": 3
 }

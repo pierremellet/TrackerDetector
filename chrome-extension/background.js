@@ -1,3 +1,5 @@
+importScripts("./service.js");
+
 /**
  * Open tracker finder in a new page
  */
@@ -34,7 +36,6 @@ const postReport = (report, endpoint) => {
       }
     `;
 
-    console.log(queyString);
 
     const graphqlQuery = {
         "query": queyString,
@@ -48,10 +49,15 @@ const postReport = (report, endpoint) => {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(graphqlQuery)
-    })
-        .then(resp => console.log(resp));
+    }).then(resp => console.log(resp));
 }
 
+/**
+ * Get remote config periodicaly from server
+ */
+chrome.alarms.onAlarm.addListener(async a => {
+   await updateConfiguration();
+});
 
 /**
  * Collect cookies from tabId
@@ -90,10 +96,11 @@ const collectCookies = async (tabId) => {
  * Open dashboard page on first activation
  */
 chrome.runtime.onInstalled.addListener(async () => {
-    const settings = (await chrome.storage.local.get('settings')).settings;
-    if (!settings.endpointValue || !settings.domains) {
-        openDashboad();
-    }
+    chrome.alarms.get('alarm', a => {
+        if (!a) {
+            chrome.alarms.create('alarm', { periodInMinutes: 0.5 });
+        }
+    });
 });
 
 /**
@@ -108,7 +115,9 @@ chrome.action.onClicked.addListener((tab) => {
  * Listen message from tabs to trigger cookies collect
  */
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
-    const settings = (await chrome.storage.local.get('settings')).settings;
+
+    const settings = await getLocalConfigurationData();
+    console.log(settings);
 
     // If message is page-unload and current tag domain is inclued within configured domains
     if (
@@ -139,6 +148,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         console.log(trackingReport);
         postReport(trackingReport, settings.endpointValue);
     }
+
 })
 
 
