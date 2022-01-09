@@ -25,6 +25,7 @@ export default class GQLSetup {
         type ApplicationVersion {
             id: ID
             name: String
+            enable: Boolean
             urls: [ApplicationURL!]
             cookies: [CookieTemplate!]
         } 
@@ -74,6 +75,7 @@ export default class GQLSetup {
         input ApplicationVersionInput{
             id: Int
             name: String
+            enable: Boolean
             urls: [URLInput!]
             cookies: [CookieTemplateInput!]
         }
@@ -91,7 +93,7 @@ export default class GQLSetup {
         type Mutation {
             createPartialReport(input: PartialReport): String
             createApplication(appName: String): Application
-            createApplicationVersion(appId: ID, versionName: String): Application
+            createApplicationVersion(appId: ID, versionName: String): ApplicationVersion
             updateApplication(appId: ID, appName: String): Application
             updateApplicationVersion(version: ApplicationVersionInput): ApplicationVersion
             deleteApplication(appId: ID):Application

@@ -54,6 +54,7 @@ export class VersionEditComponent implements OnInit {
         versions(filter: ${this.verId}){
           id
           name
+          enable
           urls{
             id
             url
@@ -108,11 +109,13 @@ export class VersionEditComponent implements OnInit {
       updateApplicationVersion(version: {
         id : ${this.verId}
         name: "${this.version.name}"
+        enable: ${this.version.enable}
         urls: [${urlsString.join(',')}]
         cookies: [${cookiesString.join(',')}]
       }){
         id
         name
+        enable
         urls{
           id
           url

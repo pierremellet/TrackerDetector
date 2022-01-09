@@ -65,6 +65,7 @@ export class ApplicationEditComponent implements OnInit {
             versions {
               id
               name
+              enable
             }
           }
         }`;
@@ -87,16 +88,15 @@ export class ApplicationEditComponent implements OnInit {
     const queyString = `
       mutation {
         createApplicationVersion(appId: ${this.app.id},  versionName: "new") {
-          versions{
-            id
+             id
             name
-          }
+            enable
         }
       }
     `;
     this.gql.sendQuery(queyString).pipe(
       map(r => r.data.createApplicationVersion),
-      tap(v => this.app.versions = v.versions)
+      tap(v => this.app.versions.push(v))
     ).subscribe();
   }
 

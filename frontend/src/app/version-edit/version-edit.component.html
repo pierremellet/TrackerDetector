@@ -9,7 +9,14 @@
             <input [(ngModel)]="version.name" type="text" class="form-control" id="versionName" required>
             <small id="versionNameHelp" class="form-text text-muted">Required</small>
         </div>
-
+        <div class="form-group">
+            <label>Enable</label>
+            <select [(ngModel)]="version.enable" type="text" class="form-select" required>
+                <option value="true">true</option>
+                <option value="false">false</option>
+            </select>
+            <small id="versionEnableHelp" class="form-text text-muted">Required</small>
+        </div>
         <br />
 
         <div class="card">
@@ -56,13 +63,13 @@
                         </div>
                         <div class="row mb-2" *ngFor="let cookie of version.cookies" [class.d-none]="cookie.disabled">
                             <div class="form-group col-md-6">
-                                 <input [(ngModel)]="cookie.nameRegex" type="text" class="form-control">
+                                <input [(ngModel)]="cookie.nameRegex" type="text" class="form-control">
                             </div>
-                            <div class="form-group col-md-5" >
-                                 <select [(ngModel)]="cookie.httpOnly"  class="form-select" >
-                                     <option value="true">true</option>
-                                     <option value="false">false</option>
-                                 </select>
+                            <div class="form-group col-md-5">
+                                <select [(ngModel)]="cookie.httpOnly" class="form-select">
+                                    <option value="true">true</option>
+                                    <option value="false">false</option>
+                                </select>
                             </div>
 
                             <div class="col-md-1">

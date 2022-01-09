@@ -188,6 +188,7 @@ export class TrackerFinderController {
         return this.prisma.application_Version.update({
             data: {
                 name: version.name,
+                enable: version.enable,
                 urls: {
                     upsert: urlsData,
                     deleteMany: urlsToDelete
