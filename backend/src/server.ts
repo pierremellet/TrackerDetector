@@ -5,4 +5,7 @@ const port = 3333;
 
 log.info(`Start server on port ${port}`);
 
-app.listen(port);
+
+app.start(port)
+
+ 

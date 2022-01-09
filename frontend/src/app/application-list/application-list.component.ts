@@ -1,7 +1,7 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
+import { GraphQLService } from '../graph-ql.service';
 
 @Component({
   selector: 'app-application-list',
@@ -11,7 +11,7 @@ import { map } from 'rxjs';
 export class ApplicationListComponent implements OnInit {
   apps: any;
 
-  constructor(private http: HttpClient, private router: Router, private route: ActivatedRoute) { }
+  constructor(private gql: GraphQLService, private router: Router, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
     const queyString = `
@@ -23,18 +23,25 @@ export class ApplicationListComponent implements OnInit {
     }
     `;
 
-    this.http.post('http://localhost:3333/graphql', {
-      "query": queyString,
-      "operationName": null,
-      "variables": {}
-    }).pipe(
+    this.gql.sendQuery(queyString).pipe(
       map((resp: any) => resp.data.allApplications)
     ).subscribe(apps => this.apps = apps)
   }
 
-  nav(id: number){
-    this.router.navigate([id], {relativeTo:this.route});
+  createApplication(){
+    const queyString = `
+    mutation{
+      createApplication(appName: "My New Application"){
+        id
+      }
+    }
+    `;
 
+    this.gql.sendQuery(queyString).pipe(
+      map((resp:any) => resp.data.createApplication)
+    ).subscribe(app => {
+      this.router.navigate(["/applications", app.id])
+    })
   }
  
 

@@ -30,11 +30,11 @@ const postReport = (report, endpoint) => {
         createPartialReport(input: {
           url : "${report.url}"
           cookies : [${report.cookies.map(c => cookieToGQLString(c)).join(',')}]
-        }){
-          id
-        }
+        })
       }
     `;
+
+    console.log(queyString);
 
     const graphqlQuery = {
         "query": queyString,

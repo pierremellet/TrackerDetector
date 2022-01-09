@@ -1,12 +1,11 @@
 <div *ngIf="app">
     <h2>
         <button class="btn btn-back" [routerLink]="['/applications']"></button>
-        <span *ngIf="!id">New application</span>
-        <span *ngIf="id">Application {{appForm.get('appName')?.value}}</span>
-        <button type="submit" class="btn btn-primary float-end" (click)="submit()">Submit</button>
+        <span>Application {{appForm.get('appName')?.value}}</span>
+        <button type="submit" class="btn btn-danger float-end" (click)="deleteApp()">Delete</button>
     </h2>
 
-
+    <br />
 
     <div class="card">
         <div class="card-body">
@@ -19,16 +18,19 @@
                         <small id="appNameHelp" class="form-text text-muted">Required</small>
                     </div>
                 </div>
+                <button type="submit" class="btn btn-primary float-end" (click)="submit()">Submit</button>
+
             </div>
         </div>
     </div>
 
-    <br/>
+    <br />
 
     <div class="card">
         <div class="card-body">
-            <h3 class="card-title">Versions</h3>
-            <button type="submit" class="btn btn-primary" (click)="createVersion()">Create Version</button>
+            <h3 class="card-title">Versions <button type="submit" class="btn btn-secondary btn-sm float-end"
+                    (click)="createVersion()">Create Version</button>
+            </h3>
             <app-version-list (selectedVersion)="goToVersion($event)" [versions]="app.versions"></app-version-list>
         </div>
     </div>

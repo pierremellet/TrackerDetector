@@ -18,40 +18,35 @@ model Application {
 
 model Application_Version {
   id                        Int                         @id @default(autoincrement())
-  name                      String                      @unique
-  application               Application                 @relation(fields: [applicationId], references: [id])
+  name                      String                      
+  application               Application                 @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   applicationId             Int
   urls                      Application_URL[]
-  cookies                   ApplicationVersion_Cookie[]
+  cookies                   CookieTemplate[]
+  enable                    Boolean                     @default(true)
+  @@unique([name, applicationId])
 }
 
 model Application_URL {
   id                   Int                 @id @default(autoincrement())
   url                  String              @unique
-  applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id])
+  applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
   applicationVersionId Int
 }
 
 model CookieTemplate {
   id                        Int                         @id @default(autoincrement())
   nameRegex                 String
-  domain                    String
-  path                      String
-  httpOnly                  Boolean
-  hostOnly                  Boolean
-  secure                    Boolean
-  session                   Boolean
-  applicationVersions       ApplicationVersion_Cookie[]
+  domain                    String?
+  path                      String?
+  httpOnly                  Boolean?
+  hostOnly                  Boolean?
+  secure                    Boolean?
+  session                   Boolean?
+  applicationVersion        Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
+  applicationVersionId      Int
 }
-
-model ApplicationVersion_Cookie {
-  id                   Int                 @id @default(autoincrement())
-  applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id])
-  applicationVersionId Int
-  cookieTemplate       CookieTemplate      @relation(fields: [cookieTemplateId], references: [id])
-  cookieTemplateId     Int
-}
-
+ 
 model CookieInstance {
   id        Int     @id @default(autoincrement())
   name      String

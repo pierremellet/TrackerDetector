@@ -1,36 +1,70 @@
-import express from 'express';
-import cors from 'cors';
 import { TrackerFinderController } from './controller';
-import { StorageService } from './storage';
-import { graphqlHTTP } from 'express-graphql';
 import { PrismaClient } from '@prisma/client';
-import GraphQLController from './graphql';
-
-
+import GQLSetup from './GQLSetup';
+import { PubSub } from 'graphql-subscriptions';
+import { ApolloServer } from 'apollo-server-express';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { DocumentNode, execute, subscribe } from 'graphql';
+import { PluginDefinition } from 'apollo-server-core';
+import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
+import express from 'express';
+import http from 'http';
+import cors from 'cors';
+import { interval, timer } from 'rxjs';
 
 
 class App {
-  public server;
 
-  constructor() {
-    this.server = express();
+  async start(port: number) {
+    const pubsub = new PubSub();
     const prisma = new PrismaClient();
-    const storageService = new StorageService(prisma);
-    const controller = new TrackerFinderController(storageService);
-    this.middlewares();
-    const schema = new GraphQLController(prisma, controller).schema;
-    this.server.use('/graphql', graphqlHTTP({
+    const controller = new TrackerFinderController(pubsub, prisma);
+    const gqlController = new GQLSetup(pubsub, prisma, controller);
+    const typeDefs = gqlController.typeDefs;
+    const resolvers = gqlController.resolvers;
+    await this.startApolloServer(port, typeDefs, resolvers);
+    interval(100).subscribe(()=>pubsub.publish('COOKIE_NOT_EXIST_1', {
+      appVerCookieNotFounded: {
+        name: (new Date()).getTime() + ""
+      }
+    }))
+  }
+
+ private async startApolloServer(port: number, typeDefs: DocumentNode, resolvers: any) {
+    const app = express();
+    app.use(cors());
+
+    const httpServer = http.createServer(app);
+    const schema = makeExecutableSchema({ typeDefs, resolvers });
+
+    const subscriptionServer = SubscriptionServer.create(
+      { schema, execute, subscribe }, 
+      {server: httpServer,path: '/graphql'}
+    );
+
+    const drainWebSocketServer: PluginDefinition = {
+      serverWillStart: async () => {
+        drainServer: async () => {
+          console.log("close");
+          subscriptionServer.close();
+        }
+      }
+    }
+
+    const server = new ApolloServer({
       schema,
-    }));
+      plugins: [drainWebSocketServer, ApolloServerPluginDrainHttpServer({ httpServer })],
+    });
+
+    await server.start();
+    server.applyMiddleware({app});
+
+    httpServer.listen(port, () =>
+    console.log(`Server is now running on http://localhost:${port}/graphql`)
+  );
   }
-
-  middlewares() {
-    this.server.use(express.json());
-    this.server.use(cors());
-  }
-
-
-
 }
 
-export default new App().server;
+
+export default new App();

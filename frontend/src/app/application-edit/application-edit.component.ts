@@ -1,8 +1,7 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { map, Observable, tap } from 'rxjs';
+import { map, tap } from 'rxjs';
 import { GraphQLService } from '../graph-ql.service';
 
 @Component({
@@ -23,14 +22,28 @@ export class ApplicationEditComponent implements OnInit {
   constructor(private gql: GraphQLService, private route: ActivatedRoute, private router: Router) {
   }
 
-  show(event: any) {
-    console.log(event);
+  deleteApp() {
+    if (window.confirm(`Delete application ${this.app.name} ?`)) {
+
+      const queyString = `
+      mutation {
+        deleteApplication(appId: "${this.app.id}")
+      }`;
+  
+      this.gql.sendQuery(queyString)
+        .pipe(
+          map((resp: any) => resp.data.createApplication)
+        ).subscribe(app => {
+          console.log(app);
+          this.router.navigate(['/applications'])
+        })
+    }
   }
 
   submit() {
     const queyString = `
     mutation {
-      createApplication(appName: "${this.appForm.get('appName')?.value}"){
+      updateApplication(appId: ${this.app.id}, appName: "${this.appForm.get('appName')?.value}"){
         id
         name
       }
@@ -39,9 +52,7 @@ export class ApplicationEditComponent implements OnInit {
     this.gql.sendQuery(queyString)
       .pipe(
         map((resp: any) => resp.data.createApplication)
-      ).subscribe(app => {
-        this.router.navigate(['/applications', app.id, 'view'])
-      })
+      ).subscribe();
   }
 
   update(id: number) {
@@ -76,19 +87,21 @@ export class ApplicationEditComponent implements OnInit {
     const queyString = `
       mutation {
         createApplicationVersion(appId: ${this.app.id},  versionName: "new") {
-          id
-          name
+          versions{
+            id
+            name
+          }
         }
       }
     `;
     this.gql.sendQuery(queyString).pipe(
-      map(r => r.data.createApplication),
+      map(r => r.data.createApplicationVersion),
       tap(v => this.app.versions = v.versions)
     ).subscribe();
   }
 
-  goToVersion(id: number){
-    this.router.navigate(['/application', this.app.id, 'versions', id]);
+  goToVersion(id: number) {
+    this.router.navigate(['/applications', this.app.id, 'versions', id]);
   }
 
 
