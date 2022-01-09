@@ -2,68 +2,77 @@ import { TrackerFinderController } from './controller';
 import { PrismaClient } from '@prisma/client';
 import GQLSetup from './GQLSetup';
 import { PubSub } from 'graphql-subscriptions';
-import { ApolloServer } from 'apollo-server-express';
-import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { makeExecutableSchema } from '@graphql-tools/schema';
-import { DocumentNode, execute, subscribe } from 'graphql';
-import { PluginDefinition } from 'apollo-server-core';
-import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
 import express from 'express';
-import http from 'http';
 import cors from 'cors';
-import { interval, timer } from 'rxjs';
-
+import { graphqlHTTP } from 'express-graphql';
+import rootLogger from "./logger"
+import { interval } from 'rxjs';
+import { createServer } from 'http';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { execute, subscribe } from 'graphql';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 
 class App {
 
-  async start(port: number) {
+  private _log = rootLogger.getChildLogger({ name: "TrackerFinderController" });
+
+  async start(PORT: number) {
     const pubsub = new PubSub();
+    interval(500).subscribe((i) => {
+      pubsub.publish('COOKIE_NOT_EXIST_1', { appVerCookieNotFounded: "toto" });
+    })
+
     const prisma = new PrismaClient();
     const controller = new TrackerFinderController(pubsub, prisma);
     const gqlController = new GQLSetup(pubsub, prisma, controller);
+
     const typeDefs = gqlController.typeDefs;
     const resolvers = gqlController.resolvers;
-    await this.startApolloServer(port, typeDefs, resolvers);
-    interval(100).subscribe(()=>pubsub.publish('COOKIE_NOT_EXIST_1', {
-      appVerCookieNotFounded: {
-        name: (new Date()).getTime() + ""
-      }
-    }))
-  }
 
- private async startApolloServer(port: number, typeDefs: DocumentNode, resolvers: any) {
-    const app = express();
-    app.use(cors());
-
-    const httpServer = http.createServer(app);
     const schema = makeExecutableSchema({ typeDefs, resolvers });
 
-    const subscriptionServer = SubscriptionServer.create(
-      { schema, execute, subscribe }, 
-      {server: httpServer,path: '/graphql'}
-    );
+    const app = express();
+    app.use(cors());
+    app.get('/', (req: any, res: any) => {
+      res.send('TrackerDetectorServer');
+    })
 
-    const drainWebSocketServer: PluginDefinition = {
-      serverWillStart: async () => {
-        drainServer: async () => {
-          console.log("close");
-          subscriptionServer.close();
-        }
-      }
-    }
-
-    const server = new ApolloServer({
+    app.use('/graphql', graphqlHTTP({
       schema,
-      plugins: [drainWebSocketServer, ApolloServerPluginDrainHttpServer({ httpServer })],
+      graphiql: true
+    }));
+
+
+
+    const ws = createServer(app);
+    const server = ws.listen(PORT, () => {
+       new SubscriptionServer(
+        {
+          execute,
+          subscribe,
+          schema,
+        },
+        {
+          server: ws,
+          path: '/graphql',
+        },
+      );
+
+      this._log.info(`🚀 Server Sub ready at ws://localhost:${PORT}/graphql`);
+      this._log.info(`🚀 Server ready at http://localhost:${PORT}/graphql`);
+
     });
 
-    await server.start();
-    server.applyMiddleware({app});
+    process.on('SIGTERM', () => {
+      server.close(() => {
+        this._log.info(`Server closed`);
+      })
+    })
 
-    httpServer.listen(port, () =>
-    console.log(`Server is now running on http://localhost:${port}/graphql`)
-  );
+
+
   }
+
 }
 
 

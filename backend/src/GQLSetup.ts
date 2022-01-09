@@ -1,17 +1,15 @@
 import { Application, CookieInstance, PrismaClient } from "@prisma/client";
 import { TrackerFinderController } from "./controller";
 import { PubSub } from 'graphql-subscriptions';
-import { gql } from "apollo-server";
-import { DocumentNode } from "graphql";
 import { extractHostname } from "./utils";
 
 export default class GQLSetup {
 
-    public typeDefs: DocumentNode;
-    public  resolvers: any;
+    public typeDefs: string;
+    public resolvers: any;
 
     constructor(protected pubsub: PubSub, protected prisma: PrismaClient, protected appController: TrackerFinderController) {
-        this.typeDefs = gql`
+        this.typeDefs = `
         type Configuration {
             domains: [String!]!
         }
