@@ -25,7 +25,7 @@ const setRemoteEndpoint = async (endpoint) => {
 const getLocalConfigurationData = () => {
     return new Promise((res, rej) => {
         chrome.storage.local.get('settings', (val) => {
-            res(val);
+            res(val.settings);
         });
     });
 }

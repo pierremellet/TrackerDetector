@@ -1,21 +1,30 @@
 <div *ngIf="version">
     <h2>
         <button class="btn btn-back" [routerLink]="['/applications', appId]"></button>
-        <span>{{applicationName}} > {{version.name}}</span>
+        <span>Application : {{applicationName}} > Version : {{version.name}}</span>
     </h2>
     <div>
-        <div class="form-group">
-            <label for="versionName">Version Name</label>
-            <input [(ngModel)]="version.name" type="text" class="form-control" id="versionName" required>
-            <small id="versionNameHelp" class="form-text text-muted">Required</small>
-        </div>
-        <div class="form-group">
-            <label>Enable</label>
-            <select [(ngModel)]="version.enable" type="text" class="form-select" required>
-                <option value="true">true</option>
-                <option value="false">false</option>
-            </select>
-            <small id="versionEnableHelp" class="form-text text-muted">Required</small>
+        <div class="card">
+            <div class="card-body">
+                <div class="card-text ">
+                    <div class="form-group">
+                        <label for="versionName">Version Name</label>
+                        <input [(ngModel)]="version.name" type="text" class="form-control" id="versionName" required>
+                        <small id="versionNameHelp" class="form-text text-muted">Required</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Enable</label>
+                        <select [(ngModel)]="version.enable" type="text" class="form-select" required>
+                            <option value="true">true</option>
+                            <option value="false">false</option>
+                        </select>
+                        <small id="versionEnableHelp" class="form-text text-muted">Required</small>
+                    </div>
+
+                    <br />
+                    <button class="btn btn-primary float-end" (click)="save()">Save Version</button>
+                </div>
+            </div>
         </div>
         <br />
 
@@ -81,9 +90,5 @@
                 </div>
             </div>
         </div>
-
-
     </div>
-    <br />
-    <button class="btn btn-primary" (click)="save()">Save Version</button>
 </div>

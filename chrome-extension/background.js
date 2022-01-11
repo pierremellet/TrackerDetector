@@ -43,11 +43,7 @@ const postReport = (report, endpoint) => {
         "variables": {}
     }
     fetch(endpoint, {
-        method: "POST",
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
+        method: "POST", 
         body: JSON.stringify(graphqlQuery)
     }).then(resp => console.log(resp));
 }
@@ -117,12 +113,11 @@ chrome.action.onClicked.addListener((tab) => {
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     const settings = await getLocalConfigurationData();
-    console.log(settings);
 
     // If message is page-unload and current tag domain is inclued within configured domains
     if (
         message == "page-unload"
-        && settings.domains.split('\n').findIndex(dom => sender.url.includes(dom)) != -1
+        && settings.domains.findIndex(dom => sender.url.includes(dom)) != -1
     ) {
 
         const cookies = (await collectCookies(sender.tab.id)).map(c => {
@@ -146,7 +141,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             pixels: []
         }
         console.log(trackingReport);
-        postReport(trackingReport, settings.endpointValue);
+        const endpoint = await getRemoteEndpoint();
+        postReport(trackingReport, endpoint);
     }
 
 })

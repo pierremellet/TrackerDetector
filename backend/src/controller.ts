@@ -23,6 +23,7 @@ export class TrackerFinderController {
     constructor(private pubsub: PubSub, private prisma: PrismaClient) {
         // Process incomming cookies
         this.rawPartialReportSubject.pipe(
+            tap(report => this._log.info(`Partial report received for URL : ${report.url}`)),
             map(report => this.removeURLParams(report)),
             windowCount(3),
             map(win => win.pipe(
