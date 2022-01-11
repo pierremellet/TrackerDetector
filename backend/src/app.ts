@@ -6,26 +6,25 @@ import express from 'express';
 import cors from 'cors';
 import { graphqlHTTP } from 'express-graphql';
 import rootLogger from "./logger"
-import { interval } from 'rxjs';
 import { createServer } from 'http';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-
+import yaml from 'js-yaml';
+import fs from 'fs';
+import { AppConfig } from './utils';
 class App {
 
-  private _log = rootLogger.getChildLogger({ name: "TrackerFinderController" });
+  private config: AppConfig = yaml.load(fs.readFileSync('config/config.yml', 'utf8')) as AppConfig;
+  private _log = rootLogger(this.config).getChildLogger({ name: "TrackerFinderController" });
 
-  async start(PORT: number) {
+  async start() {
     const pubsub = new PubSub();
-    interval(500).subscribe((i) => {
-      pubsub.publish('COOKIE_NOT_EXIST_1', { appVerCookieNotFounded: "toto" });
-    })
 
     const prisma = new PrismaClient();
-    const controller = new TrackerFinderController(pubsub, prisma);
+    const controller = new TrackerFinderController(this.config, pubsub, prisma);
+    
     const gqlController = new GQLSetup(pubsub, prisma, controller);
-
     const typeDefs = gqlController.typeDefs;
     const resolvers = gqlController.resolvers;
 
@@ -42,11 +41,9 @@ class App {
       graphiql: true
     }));
 
-
-
     const ws = createServer(app);
-    const server = ws.listen(PORT, () => {
-       new SubscriptionServer(
+    const server = ws.listen(this.config.port, () => {
+      new SubscriptionServer(
         {
           execute,
           subscribe,
@@ -58,8 +55,8 @@ class App {
         },
       );
 
-      this._log.info(`🚀 Server Sub ready at ws://localhost:${PORT}/graphql`);
-      this._log.info(`🚀 Server ready at http://localhost:${PORT}/graphql`);
+      this._log.info(`🚀 Server Sub ready at ws://localhost:${this.config.port}/graphql`);
+      this._log.info(`🚀 Server ready at http://localhost:${this.config.port}/graphql`);
 
     });
 
@@ -74,6 +71,7 @@ class App {
   }
 
 }
+
 
 
 export default new App();

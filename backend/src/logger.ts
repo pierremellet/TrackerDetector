@@ -1,10 +1,11 @@
-import { Logger } from "tslog";
+import { Logger, TLogLevelName } from "tslog";
+import { AppConfig } from "./utils";
 
-const log = new Logger({
+const log = (config: AppConfig) => new Logger({
     displayInstanceName: true,
     printLogMessageInNewLine: false,
     displayTypes: true,
-    minLevel: "debug"
+    minLevel: config.log_level as TLogLevelName
 });
 
 

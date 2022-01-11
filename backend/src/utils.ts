@@ -14,4 +14,14 @@ const extractHostname = (url: string) => {
     return hostname;
 }
 
-export {extractHostname};
+class AppConfig {
+    constructor(
+      public port: number,
+      public endpoint: string,
+      public input_buffer: number,
+      public log_level: string
+    ) { }
+  
+  }
+
+export {extractHostname, AppConfig};

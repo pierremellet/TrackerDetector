@@ -2,10 +2,11 @@ import { Application, Application_URL, Application_Version, CookieInstance, Cook
 import { concatMap, groupBy, map, mergeAll, reduce, Subject, tap, windowCount } from "rxjs";
 import rootLogger from "./logger"
 import { PubSub } from 'graphql-subscriptions';
+import { AppConfig } from "./utils";
 export class TrackerFinderController {
 
 
-    private _log = rootLogger.getChildLogger({ name: "TrackerFinderController" });
+    private _log = rootLogger(this.config).getChildLogger({ name: "TrackerFinderController" });
 
 
     // Topic for received cookie pending processing
@@ -14,18 +15,19 @@ export class TrackerFinderController {
     // Topic for patial reports ready for processing
     private sanitizedPartialReportSubject = new Subject<PartialReport>();
 
-
+    // Topic for observed cookies that doesn't correspond to the expectations of the version
     private driftedCookiesSubject = new Subject<{
         versionId: number,
         cookie: CookieInstance
     }>();
 
-    constructor(private pubsub: PubSub, private prisma: PrismaClient) {
-        // Process incomming cookies
+    constructor(private config: AppConfig, private pubsub: PubSub, private prisma: PrismaClient) {
+
+        // Process incomming partial report in order to group and aggregate reports by URL 
         this.rawPartialReportSubject.pipe(
-            tap(report => this._log.info(`Partial report received for URL : ${report.url}`)),
+            tap(report => this._log.debug(`Partial report received for URL : ${report.url}`)),
             map(report => this.removeURLParams(report)),
-            windowCount(3),
+            windowCount(config.input_buffer),
             map(win => win.pipe(
                 groupBy(report => report.url),
                 map(grp => grp.pipe(
@@ -44,7 +46,7 @@ export class TrackerFinderController {
             this.sanitizedPartialReportSubject.next(sanitizedReport);
         })
 
-        // Process sanitized reports
+        // Process sanitized reports to find if report match with a version
         this.sanitizedPartialReportSubject.pipe(
             map(async report => {
                 const reportAndVersions: {
@@ -60,7 +62,7 @@ export class TrackerFinderController {
                             }
                         },
                         include: {
-                            cookies:true
+                            cookies: true
                         }
                     }),
                     'report': report
@@ -72,12 +74,12 @@ export class TrackerFinderController {
             tap(async reportAndVersion => {
                 const versions = await reportAndVersion.versions;
                 if (!versions || versions.length) {
-                    this._log.error(`No version founded for report URL ${reportAndVersion.report.url}`);
+                    this._log.error(`No version found for report URL ${reportAndVersion.report.url}`);
                 }
                 versions.forEach(version => {
                     reportAndVersion.report.cookies.forEach(cookieInstance => {
                         var match = false;
-                        version.cookies.forEach((cookieTemplate: CookieTemplate ) => {
+                        version.cookies.forEach((cookieTemplate: CookieTemplate) => {
                             var regex = new RegExp(cookieTemplate.nameRegex);
                             if (cookieInstance.name.match(regex)) {
                                 match = true;
@@ -129,7 +131,7 @@ export class TrackerFinderController {
         return report;
     }
 
- 
+
     async createApplicationVersion(appId: number, versionName: string): Promise<Application_Version> {
         return await this.prisma.application_Version.create({
             data: {
@@ -244,7 +246,7 @@ export class TrackerFinderController {
                 'id': id
             },
             include: {
-                versions : true
+                versions: true
             }
         });
     }

@@ -15,7 +15,7 @@ const openDashboad = async () => {
  * @param {*} report 
  * @param {*} endpoint 
  */
-const postReport = (report, endpoint) => {
+const postReport = async (report, endpoint) => {
     const cookieToGQLString = (c) => `
     {
         name: "${c.name}"
@@ -42,17 +42,22 @@ const postReport = (report, endpoint) => {
         "operationName": null,
         "variables": {}
     }
-    fetch(endpoint, {
-        method: "POST", 
+    console.log(endpoint);
+    return fetch(endpoint, {
+        method: "POST",
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify(graphqlQuery)
-    }).then(resp => console.log(resp));
+    });
 }
 
 /**
  * Get remote config periodicaly from server
  */
 chrome.alarms.onAlarm.addListener(async a => {
-   await updateConfiguration();
+    await updateConfiguration();
 });
 
 /**
@@ -140,9 +145,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             cookies: cookies,
             pixels: []
         }
-        console.log(trackingReport);
         const endpoint = await getRemoteEndpoint();
-        postReport(trackingReport, endpoint);
+        await postReport(trackingReport, endpoint);
     }
 
 })
