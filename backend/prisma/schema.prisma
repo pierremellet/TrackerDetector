@@ -17,13 +17,15 @@ model Application {
 }
 
 model Application_Version {
-  id                        Int                         @id @default(autoincrement())
-  name                      String                      
-  application               Application                 @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  applicationId             Int
-  urls                      Application_URL[]
-  cookies                   CookieTemplate[]
-  enable                    Boolean                     @default(true)
+  id                    Int               @id @default(autoincrement())
+  name                  String
+  application           Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId         Int
+  urls                  Application_URL[]
+  cookieTemplates       CookieTemplate[]
+  unknowCookieInstances CookieInstance[]
+  enable                Boolean           @default(true)
+
   @@unique([name, applicationId])
 }
 
@@ -35,28 +37,29 @@ model Application_URL {
 }
 
 model CookieTemplate {
-  id                        Int                         @id @default(autoincrement())
-  nameRegex                 String
-  domain                    String?
-  path                      String?
-  httpOnly                  Boolean?
-  hostOnly                  Boolean?
-  secure                    Boolean?
-  session                   Boolean?
-  applicationVersion        Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
-  applicationVersionId      Int
+  id                   Int                 @id @default(autoincrement())
+  nameRegex            String
+  domain               String?
+  path                 String?
+  httpOnly             Boolean?
+  hostOnly             Boolean?
+  secure               Boolean?
+  session              Boolean?
+  applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
+  applicationVersionId Int
 }
- 
+
 model CookieInstance {
-  id        Int     @id @default(autoincrement())
-  name      String
-  domain    String
-  path      String
-  httpOnly  Boolean
-  hostOnly  Boolean
-  secure    Boolean
-  session   Boolean
-  timestamp Int
-  duration  Float?
-  url       String
+  id                   Int                 @id @default(autoincrement())
+  name                 String
+  domain               String
+  path                 String
+  httpOnly             Boolean
+  hostOnly             Boolean
+  secure               Boolean
+  session              Boolean
+  timestamp            Int
+  duration             Float?
+  applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
+  applicationVersionId Int
 }

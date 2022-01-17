@@ -2,6 +2,7 @@ import { Application, CookieInstance, PrismaClient } from "@prisma/client";
 import { TrackerFinderController } from "./controller";
 import { PubSub } from 'graphql-subscriptions';
 import { extractHostname } from "./utils";
+import { COOKIE_APP_NOT_EXIST } from "./events";
 
 export default class GQLSetup {
 
@@ -100,6 +101,7 @@ export default class GQLSetup {
         }
         type Subscription {
             appVerCookieNotFounded(appVersionId: ID): CookieInstance
+            appCookieNotFounded(appId: ID): CookieInstance
         }
         `;
 
@@ -184,8 +186,8 @@ export default class GQLSetup {
                 }
             },
             Subscription: {
-                appVerCookieNotFounded: {
-                    subscribe: (parent: any, args: any, context: any) => pubsub.asyncIterator("COOKIE_NOT_EXIST_" + args.appVersionId)
+                appCookieNotFounded: {
+                    subscribe: (parent: any, args: any, context: any) => pubsub.asyncIterator(COOKIE_APP_NOT_EXIST + args.appId)
                 }
             }
         };

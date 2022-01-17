@@ -29,7 +29,7 @@ class App {
     const resolvers = gqlController.resolvers;
 
     const schema = makeExecutableSchema({ typeDefs, resolvers });
-
+ 
     const app = express();
     app.use(cors());
     app.get('/', (req: any, res: any) => {
@@ -65,8 +65,6 @@ class App {
         this._log.info(`Server closed`);
       })
     })
-
-
 
   }
 

@@ -1,3 +1,13 @@
 <div>
-    
+    <h1>Application Reports</h1>
+    <div class="form-group">
+        <label>Application</label>
+        <select [(ngModel)]="currentApplicationId" type="text" class="form-select" (change)="onApplicationChange($event)">
+            <option [value]="appli.id" *ngFor="let appli of applications">{{appli.name}}</option> 
+        </select>
+    </div>
+    <br/>
+    <div>
+         <div *ngFor="let log of logs">{{log}}</div>
+    </div>
 </div>

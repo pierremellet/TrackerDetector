@@ -1,8 +1,10 @@
 import { Application, Application_URL, Application_Version, CookieInstance, CookieTemplate, Prisma, prisma, PrismaClient } from "@prisma/client";
-import { concatMap, groupBy, map, mergeAll, reduce, Subject, tap, windowCount } from "rxjs";
+import { concatMap, groupBy, map, mergeAll, mergeMap, Observable, of, reduce, Subject, tap, windowCount } from "rxjs";
 import rootLogger from "./logger"
 import { PubSub } from 'graphql-subscriptions';
 import { AppConfig } from "./utils";
+import { COOKIE_APP_NOT_EXIST } from "./events";
+import { PartialReport } from "./model";
 export class TrackerFinderController {
 
 
@@ -17,6 +19,7 @@ export class TrackerFinderController {
 
     // Topic for observed cookies that doesn't correspond to the expectations of the version
     private driftedCookiesSubject = new Subject<{
+        appId: number,
         versionId: number,
         cookie: CookieInstance
     }>();
@@ -30,16 +33,10 @@ export class TrackerFinderController {
             windowCount(config.input_buffer),
             map(win => win.pipe(
                 groupBy(report => report.url),
-                map(grp => grp.pipe(
-                    concatMap(g => g.cookies),
-                    map(c => {
-                        c.timestamp = new Date().getTime();
-                        return c;
-                    }),
-                    reduce(this.accDeduplicate, []),
-                    map(c => new PartialReport(c[0].url, c))
-                )),
-                mergeAll()
+                mergeMap(group => {
+                    const cookies: CookieInstance[] = this.dedupCookies(group);
+                    return of(new PartialReport(group.key, cookies));
+                })
             )),
             mergeAll()
         ).subscribe(sanitizedReport => {
@@ -62,7 +59,8 @@ export class TrackerFinderController {
                             }
                         },
                         include: {
-                            cookies: true
+                            cookieTemplates: true,
+                            application: true
                         }
                     }),
                     'report': report
@@ -87,6 +85,7 @@ export class TrackerFinderController {
                         });
                         if (!match) {
                             this.driftedCookiesSubject.next({
+                                appId: version.application.id,
                                 versionId: version.id,
                                 cookie: cookieInstance
                             })
@@ -100,12 +99,23 @@ export class TrackerFinderController {
         ).subscribe();
 
         this.driftedCookiesSubject.subscribe(drift => {
-            this._log.warn(`Found cookie ${drift.cookie.name} not defined in version : ${drift.versionId}}`);
-            this.pubsub.publish('COOKIE_NOT_EXIST_' + drift.versionId, { appVerCookieNotFounded: drift.cookie });
+            this.pubsub.publish(COOKIE_APP_NOT_EXIST + drift.appId, { appCookieNotFound: drift.cookie.name });
         })
     }
 
 
+
+    private dedupCookies(group: Observable<PartialReport>): CookieInstance[] {
+        const cookies: CookieInstance[] = [];
+        group.forEach(report => {
+            report.cookies.forEach(cookie => {
+                if (cookies.findIndex(c => c.name === cookie.name) === -1) {
+                    cookies.push(cookie);
+                }
+            });
+        });
+        return cookies;
+    }
 
     private accDeduplicate(acc: CookieInstance[], val: CookieInstance): CookieInstance[] {
         if (acc.findIndex(c => c.name === val.name) === -1) {
@@ -114,12 +124,6 @@ export class TrackerFinderController {
         return acc;
     }
 
-    public handleDiscoveredCookies(report: PartialReport): any {
-        report.cookies.forEach(c => {
-            c.url = report.url; // Define URL from wich cookie is discovered
-        });
-        this.rawPartialReportSubject.next(report);
-    }
 
 
     private removeURLParams(report: PartialReport): PartialReport {
@@ -127,7 +131,6 @@ export class TrackerFinderController {
         if (paramStartPost !== -1) {
             report.url = report.url.substring(0, paramStartPost);
         }
-        report.cookies.map(c => c.url = report.url);
         return report;
     }
 
@@ -196,7 +199,7 @@ export class TrackerFinderController {
                     upsert: urlsData,
                     deleteMany: urlsToDelete
                 },
-                cookies: {
+                cookieTemplates: {
                     upsert: cookiesData,
                     deleteMany: cookiesToDelete
                 }
@@ -253,17 +256,5 @@ export class TrackerFinderController {
 
 }
 
-
-export class ApplicationReport {
-    constructor(public application: Application, public urls: ApplicationURLReport[]) { }
-}
-
-export class ApplicationURLReport {
-    constructor(public applicationURL: Application_URL, public cookies: CookieInstance[]) { }
-}
-
-export class PartialReport {
-    constructor(public url: string, public cookies: CookieInstance[]) { }
-}
 
 

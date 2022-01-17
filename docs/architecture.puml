@@ -1,0 +1,9 @@
+@startuml
+interface gql as "Graph QL"
+database db as "Database"
+
+[backend] -up- gql
+[frontend] -down-( gql
+[Chrome Extension] -left-( gql
+[backend] - db
+@enduml
