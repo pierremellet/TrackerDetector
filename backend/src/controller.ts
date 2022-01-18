@@ -1,30 +1,29 @@
-import { Application, Application_URL, Application_Version, CookieInstance, CookieTemplate, Prisma, prisma, PrismaClient } from "@prisma/client";
+import { Application, Application_Version, CookieInstance, CookieTemplate, Prisma, prisma, PrismaClient } from "@prisma/client";
 import { concatMap, groupBy, map, mergeAll, mergeMap, Observable, of, reduce, Subject, tap, windowCount } from "rxjs";
 import rootLogger from "./logger"
-import { PubSub } from 'graphql-subscriptions';
 import { AppConfig } from "./utils";
-import { COOKIE_APP_NOT_EXIST } from "./events";
 import { PartialReport } from "./model";
 export class TrackerFinderController {
 
 
     private _log = rootLogger(this.config).getChildLogger({ name: "TrackerFinderController" });
 
-
-    // Topic for received cookie pending processing
+    /**
+     * Topic for received cookie pending processing
+     */
     public rawPartialReportSubject = new Subject<PartialReport>();
 
     // Topic for patial reports ready for processing
-    private sanitizedPartialReportSubject = new Subject<PartialReport>();
+    public sanitizedPartialReportSubject = new Subject<PartialReport>();
 
     // Topic for observed cookies that doesn't correspond to the expectations of the version
-    private driftedCookiesSubject = new Subject<{
+    public driftedCookiesSubject = new Subject<{
         appId: number,
         versionId: number,
         cookie: CookieInstance
     }>();
 
-    constructor(private config: AppConfig, private pubsub: PubSub, private prisma: PrismaClient) {
+    constructor(private config: AppConfig, private prisma: PrismaClient) {
 
         // Process incomming partial report in order to group and aggregate reports by URL 
         this.rawPartialReportSubject.pipe(
@@ -34,8 +33,7 @@ export class TrackerFinderController {
             map(win => win.pipe(
                 groupBy(report => report.url),
                 mergeMap(group => {
-                    const cookies: CookieInstance[] = this.dedupCookies(group);
-                    return of(new PartialReport(group.key, cookies));
+                    return of(new PartialReport(group.key, this.dedupCookies(group)));
                 })
             )),
             mergeAll()
@@ -98,9 +96,7 @@ export class TrackerFinderController {
             })
         ).subscribe();
 
-        this.driftedCookiesSubject.subscribe(drift => {
-            this.pubsub.publish(COOKIE_APP_NOT_EXIST + drift.appId, { appCookieNotFound: drift.cookie.name });
-        })
+     
     }
 
 

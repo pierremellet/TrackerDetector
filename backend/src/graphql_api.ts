@@ -4,7 +4,7 @@ import { PubSub } from 'graphql-subscriptions';
 import { extractHostname } from "./utils";
 import { COOKIE_APP_NOT_EXIST } from "./events";
 
-export default class GQLSetup {
+export default class GraphqlAPI {
 
     public typeDefs: string;
     public resolvers: any;
