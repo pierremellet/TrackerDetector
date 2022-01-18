@@ -1,7 +1,8 @@
 <div *ngIf="version">
     <h2>
         <button class="btn btn-back" [routerLink]="['/applications', appId]"></button>
-        <span>Application : {{applicationName}} > Version : {{version.name}}</span>
+        <span>Application : {{applicationName}} > Version : {{version.name}} </span>
+        <button class="btn btn-primary float-end" [class.disabled]="loading" (click)="save()">Save Version</button>
     </h2>
     <div>
         <div class="card">
@@ -20,9 +21,6 @@
                         </select>
                         <small id="versionEnableHelp" class="form-text text-muted">Required</small>
                     </div>
-
-                    <br />
-                    <button class="btn btn-primary float-end" (click)="save()">Save Version</button>
                 </div>
             </div>
         </div>
@@ -62,20 +60,59 @@
                     </h3>
                     <div>
                         <div class="row mb-3">
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-2">
                                 Name Regex
                             </div>
-                            <div class="form-group col-md-5">
+                            <div class="form-group col-md-2">
+                                Domain
+                            </div>
+                            <div class="form-group col-md-2">
+                                Path
+                            </div>
+                            <div class="form-group col-md-1">
+                                HostOnly
+                            </div>
+                            <div class="form-group col-md-1">
                                 HttpOnly
+                            </div>
+                            <div class="form-group col-md-1">
+                                Secure
+                            </div>
+                            <div class="form-group col-md-1">
+                                Session
                             </div>
                             <div class="col-md-1"></div>
                         </div>
                         <div class="row mb-2" *ngFor="let cookie of version.cookies" [class.d-none]="cookie.disabled">
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-2">
                                 <input [(ngModel)]="cookie.nameRegex" type="text" class="form-control">
                             </div>
-                            <div class="form-group col-md-5">
+                            <div class="form-group col-md-2">
+                                <input [(ngModel)]="cookie.domain" type="text" class="form-control">
+                            </div>
+                            <div class="form-group col-md-2">
+                                <input [(ngModel)]="cookie.path" type="text" class="form-control">
+                            </div>
+                            <div class="form-group col-md-1">
+                                <select [(ngModel)]="cookie.hostOnly" class="form-select">
+                                    <option value="true">true</option>
+                                    <option value="false">false</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-1">
                                 <select [(ngModel)]="cookie.httpOnly" class="form-select">
+                                    <option value="true">true</option>
+                                    <option value="false">false</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-1">
+                                <select [(ngModel)]="cookie.session" class="form-select">
+                                    <option value="true">true</option>
+                                    <option value="false">false</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-1">
+                                <select [(ngModel)]="cookie.secure" class="form-select">
                                     <option value="true">true</option>
                                     <option value="false">false</option>
                                 </select>

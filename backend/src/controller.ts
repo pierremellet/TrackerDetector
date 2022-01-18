@@ -165,19 +165,21 @@ export class TrackerFinderController {
         });
 
         const cookiesData = version.cookies.filter((u: any) => !u.disabled).map((u: any) => {
+            const data = {
+                nameRegex: u.nameRegex,
+                httpOnly: u.httpOnly,
+                domain: u.domain,
+                path: u.path,
+                hostOnly: u.hostOnly,
+                secure: u.secure,
+                session: u.session
+            };
             return {
                 where: {
                     id: parseInt(u.id, 10) || 0
                 },
-                create: {
-                    nameRegex: u.nameRegex,
-                    httpOnly: u.httpOnly
-                },
-                update: {
-                    nameRegex: u.nameRegex,
-                    httpOnly: u.httpOnly
-
-                }
+                create: data,
+                update: data
             }
         });
 

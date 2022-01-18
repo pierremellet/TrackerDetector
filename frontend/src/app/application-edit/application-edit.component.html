@@ -2,7 +2,8 @@
     <h2>
         <button class="btn btn-back" [routerLink]="['/applications']"></button>
         <span>Application : {{appForm.get('appName')?.value}}</span>
-        <button type="submit" class="btn btn-danger float-end" (click)="deleteApp()"><i class="bi bi-trash"></i> Delete</button>
+        <button type="submit" class="btn btn-primary float-end" (click)="submit()">Save Application</button>
+        <button type="submit" class="btn btn-danger ml-1 mr-1 float-end" (click)="deleteApp()"><i class="bi bi-trash"></i> Delete</button>
     </h2>
 
     <br />
@@ -18,7 +19,6 @@
                         <small id="appNameHelp" class="form-text text-muted">Required</small>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary float-end" (click)="submit()">Save Application</button>
 
             </div>
         </div>

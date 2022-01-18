@@ -15,6 +15,7 @@ export class VersionEditComponent implements OnInit {
   verId: number | undefined;
   version: any;
   applicationName: any;
+  loading = false;
 
 
   constructor(private route: ActivatedRoute, private gql: GraphQLService) { }
@@ -62,7 +63,12 @@ export class VersionEditComponent implements OnInit {
           cookies{
             id
             nameRegex
+            domain
+            path
             httpOnly
+            hostOnly
+            secure
+            session
           }
         }
       }
@@ -79,6 +85,8 @@ export class VersionEditComponent implements OnInit {
 
 
   save() {
+    this.loading = true;
+    
     const urlsString = this.version.urls.map((url: any) => {
       var idStr = "";
       if (url.id) {
@@ -101,6 +109,11 @@ export class VersionEditComponent implements OnInit {
           nameRegex:"${cookie.nameRegex}"
           httpOnly: ${cookie.httpOnly}
           disabled: ${cookie.disabled || false}
+          domain: "${cookie.domain}"
+          path: "${cookie.path}"
+          hostOnly: ${cookie.hostOnly}
+          secure: ${cookie.secure}
+          session: ${cookie.session}
         }`
     });
 
@@ -123,7 +136,12 @@ export class VersionEditComponent implements OnInit {
         cookies{
           id
           nameRegex
+          domain
+          path
           httpOnly
+          hostOnly
+          secure
+          session
         }
       }
     }
@@ -132,7 +150,10 @@ export class VersionEditComponent implements OnInit {
     this.gql.sendQuery(query)
       .pipe(
         map(r => r.data.updateApplicationVersion)
-      ).subscribe(version => this.version = version)
+      ).subscribe(version => {
+        this.loading = false;
+        this.version = version;
+      })
   }
 
 

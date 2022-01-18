@@ -32,8 +32,14 @@ export default class GraphqlAPI {
         } 
         type CookieTemplate {   
             id: ID
-            nameRegex : String
+            nameRegex: String
+            domain: String
+            path: String
             httpOnly: Boolean
+            hostOnly: Boolean
+            secure: Boolean
+            session: Boolean
+            disabled: Boolean
         }
         type CookieInstance {
             id: ID
