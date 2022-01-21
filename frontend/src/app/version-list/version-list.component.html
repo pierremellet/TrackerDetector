@@ -1,3 +1,7 @@
+<div *ngIf="!versions || versions.length == 0" class="alert alert-primary" role="alert">
+    No versions available, click '+' to add version
+</div>
+
 <ul class="list-group">
 
     <button *ngFor="let ver of versions"

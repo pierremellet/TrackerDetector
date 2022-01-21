@@ -3,6 +3,7 @@
 </div>
 
 <button class="btn btn-primary mb-2 float-end" (click)="createApplication()">Create Application</button>
+<h3>Applications</h3>
 <button type="button" *ngFor="let app of apps" class="list-group-item list-group-item-action"
     [routerLink]="['/applications', app.id]">{{app.name}}</button>
 

@@ -22,18 +22,40 @@ class App {
   async start() {
     const pubsub = new PubSub();
 
-    const prisma = new PrismaClient();
+    const prisma = new PrismaClient({
+      log: [
+        {
+          emit: 'event',
+          level: 'query',
+        },
+        {
+          emit: 'stdout',
+          level: 'error',
+        },
+        {
+          emit: 'stdout',
+          level: 'info',
+        },
+        {
+          emit: 'stdout',
+          level: 'warn',
+        },
+      ],
+    });
+
+    
+
     const controller = new TrackerFinderController(this.config, prisma);
 
     controller.driftedCookiesSubject.subscribe(drift => {
       pubsub.publish(COOKIE_APP_NOT_EXIST + drift.appId, { appCookieNotFound: drift.cookie.name });
-  })    
+    })
     const gqlController = new GQLSetup(pubsub, prisma, controller);
     const typeDefs = gqlController.typeDefs;
     const resolvers = gqlController.resolvers;
 
     const schema = makeExecutableSchema({ typeDefs, resolvers });
- 
+
     const app = express();
     app.use(cors());
     app.get('/', (req: any, res: any) => {

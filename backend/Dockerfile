@@ -3,6 +3,6 @@ FROM node:17-alpine
 RUN mkdir /app
 WORKDIR /app
 COPY . ./
-RUN yarn install && yarn build && npx prisma generate && npx prisma db push
+RUN yarn install && yarn build
 EXPOSE 3000
-CMD yarn start:prod
+CMD npx prisma generate && npx prisma db push && yarn start:prod

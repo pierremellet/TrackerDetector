@@ -3,4 +3,5 @@ tests
 injectors
 dist
 *.db
+.env
 prisma/database

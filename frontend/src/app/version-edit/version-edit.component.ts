@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { GraphQLService } from '../graph-ql.service';
+import { ToastService } from '../toast.service';
 
 @Component({
   selector: 'app-version-edit',
@@ -18,7 +19,7 @@ export class VersionEditComponent implements OnInit {
   loading = false;
 
 
-  constructor(private route: ActivatedRoute, private gql: GraphQLService) { }
+  constructor(private route: ActivatedRoute, private gql: GraphQLService, private toast : ToastService) { }
 
   addURL() {
     this.version.urls.push({
@@ -59,6 +60,7 @@ export class VersionEditComponent implements OnInit {
           urls{
             id
             url
+            type
           }
           cookies{
             id
@@ -95,6 +97,7 @@ export class VersionEditComponent implements OnInit {
       return `{
           ${idStr}
           url:"${url.url}"
+          type:"${url.type}"
           disabled: ${url.disabled || false}
         }`
     });
@@ -132,6 +135,7 @@ export class VersionEditComponent implements OnInit {
         urls{
           id
           url
+          type
         }
         cookies{
           id
@@ -153,6 +157,7 @@ export class VersionEditComponent implements OnInit {
       ).subscribe(version => {
         this.loading = false;
         this.version = version;
+        this.toast.show("Application Version", "Updated !");
       })
   }
 

@@ -1,13 +1,32 @@
 <div>
-    <h1>Application Reports</h1>
-    <div class="form-group">
-        <label>Application</label>
-        <select [(ngModel)]="currentApplicationId" type="text" class="form-select" (change)="onApplicationChange($event)">
-            <option [value]="appli.id" *ngFor="let appli of applications">{{appli.name}}</option> 
-        </select>
+  <h1>Application Reports</h1>
+  <div class="form-group">
+    <button *ngIf="currentApplication" (click)="update(currentApplication.id)" class="btn btn-primary float-end">Refresh</button>
+    <label>Select an application</label>
+    <select [(ngModel)]="currentApplicationId" type="text" class="form-select" (change)="onApplicationChange($event)">
+      <option [value]="appli.id" *ngFor="let appli of applications">{{appli.name}}</option>
+    </select>
+  </div>
+  <br />
+  <div *ngIf="currentApplication">
+    <div class="card" *ngFor="let version of currentApplication.versions">
+      <div class="card-body">
+        <h3 class="card-title">{{version.name}}
+          <div class="btn-group float-end" role="group" aria-label="Basic example">
+            <button (click)="cleanUp(version)" class="btn btn-danger ">Cleanup Version</button>
+          </div>
+        </h3>
+        <div class="card-text">
+          <h4>Cookies</h4>
+          <ul class="list-group">
+            <li class="list-group-item" *ngFor="let c of version.report.driftCookies">
+              {{c.name}}
+              <i>{{c.url}}</i>
+              <button class="btn btn-primary float-end btn-sm" (click)="convertToTemplate(version, c)">Convert To Template</button> 
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
-    <br/>
-    <div>
-         <div *ngFor="let log of logs">{{log}}</div>
-    </div>
+  </div>
 </div>

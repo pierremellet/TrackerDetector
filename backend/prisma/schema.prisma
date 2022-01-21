@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -29,16 +29,22 @@ model Application_Version {
   @@unique([name, applicationId])
 }
 
+enum Application_URL_Type {
+  PREFIX
+  EXACT
+}
+
 model Application_URL {
   id                   Int                 @id @default(autoincrement())
   url                  String              @unique
+  type                 Application_URL_Type
   applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
   applicationVersionId Int
 }
 
 model CookieTemplate {
   id                   Int                 @id @default(autoincrement())
-  nameRegex            String
+  nameRegex            String              
   domain               String?
   path                 String?
   httpOnly             Boolean?
@@ -47,6 +53,8 @@ model CookieTemplate {
   session              Boolean?
   applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
   applicationVersionId Int
+  @@unique([nameRegex, domain, applicationVersionId])
+
 }
 
 model CookieInstance {
@@ -60,6 +68,7 @@ model CookieInstance {
   session              Boolean
   timestamp            Int
   duration             Float?
+  url                  String
   applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
   applicationVersionId Int
 }

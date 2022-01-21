@@ -1,5 +1,14 @@
 version: "3.9"
 services:
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
+      POSTGRES_DB: tracker-detector
   frontend:
     build: ./frontend
     ports:
@@ -8,3 +17,7 @@ services:
     build: ./backend
     ports:
       - "3000:3000"
+    links:
+      - "postgres:postgres"
+    environment:
+      DATABASE_URL: postgresql://root:root@postgres:5432/tracker-detector

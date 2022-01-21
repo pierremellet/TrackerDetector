@@ -1,9 +1,14 @@
 <div *ngIf="app">
     <h2>
         <button class="btn btn-back" [routerLink]="['/applications']"></button>
-        <span>Application : {{appForm.get('appName')?.value}}</span>
-        <button type="submit" class="btn btn-primary float-end" (click)="submit()">Save Application</button>
-        <button type="submit" class="btn btn-danger ml-1 mr-1 float-end" (click)="deleteApp()"><i class="bi bi-trash"></i> Delete</button>
+        <span>{{appForm.get('appName')?.value}}</span>
+        <div class="btn-group float-end" role="group" aria-label="Application Controls">
+            <button type="submit" class="btn btn-primary  " (click)="submit()">Save Application</button>
+            <button type="submit" class="btn btn-danger   " (click)="deleteApp()">
+                <i class="bi bi-trash"></i>
+                Delete</button>
+        </div>
+
     </h2>
 
     <br />
@@ -28,7 +33,7 @@
 
     <div class="card">
         <div class="card-body">
-            <h3 class="card-title">Versions 
+            <h3 class="card-title">Versions
                 <button type="submit" class="btn btn-primary btn-sm float-end bi bi-plus-lg"
                     (click)="createVersion()"></button>
             </h3>

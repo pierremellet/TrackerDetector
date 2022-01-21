@@ -1,7 +1,7 @@
 <div *ngIf="version">
     <h2>
         <button class="btn btn-back" [routerLink]="['/applications', appId]"></button>
-        <span>Application : {{applicationName}} > Version : {{version.name}} </span>
+        <span>{{applicationName}} > {{version.name}} </span>
         <button class="btn btn-primary float-end" [class.disabled]="loading" (click)="save()">Save Version</button>
     </h2>
     <div>
@@ -30,17 +30,38 @@
             <div class="card-body">
                 <div class="card-text ">
                     <h3 class="mt-3">URL
-                        <button class="btn btn-secondary btn-sm float-end" (click)="addURL()">Add URL</button>
+                        <button class="btn btn-primary btn-sm float-end bi bi-plus-lg" (click)="addURL()"></button>
                     </h3>
                     <div>
+                        <div *ngIf="!version.urls || version.urls.length == 0" class="alert alert-primary" role="alert">
+                            No URL, click '+' to add one
+                        </div>
+                        <div class="row mb-3" *ngIf="version.urls.length > 0">
+                            <div class="form-group col-md-9">
+                                URL
+                            </div>
+                            <div class="form-group col-md-2">
+                                Type
+                            </div>
+                            <div class="form-group col-md-1">
+                                
+                            </div>
+                        </div>
                         <div class="row mb-3" *ngFor="let url of version.urls" [class.d-none]="url.disabled">
 
-                            <div class="col-md-11">
+                            <div class="col-md-9">
                                 <input [(ngModel)]="url.url" type="text" class="form-control" id="versionName">
                             </div>
 
+                            <div class="col-md-2">
+                                <select [(ngModel)]="url.type" class="form-select">
+                                    <option value="EXACT">EXACT</option>
+                                    <option value="PREFIX">PREFIX</option>
+                                </select>
+                            </div>
+
                             <div class="col-md-1">
-                                <button class="btn btn-secondary" (click)="remove(url)">X</button>
+                                <button class="btn btn-secondary" (click)="remove(url)"><i class="bi bi-trash"></i></button>
                             </div>
 
                         </div>
@@ -55,13 +76,17 @@
         <div class="card  ">
             <div class="card-body">
                 <div class="card-text ">
-                    <h3 class="mt-3">Cookies
-                        <button class="btn btn-secondary btn-sm float-end" (click)="addCookie()">Add Cookie</button>
+                    <h3 class="mt-3">Cookie Templates
+                        <button class="btn btn-primary btn-sm float-end bi bi-plus-lg " (click)="addCookie()"> </button>
                     </h3>
                     <div>
-                        <div class="row mb-3">
+                        <div *ngIf="!version.cookies || version.cookies.length == 0" class="alert alert-primary"
+                            role="alert">
+                            No cookies, click '+' to add one
+                        </div>
+                        <div class="row mb-3" *ngIf="version.cookies.length > 0">
                             <div class="form-group col-md-2">
-                                Name Regex
+                                Name (Regex)
                             </div>
                             <div class="form-group col-md-2">
                                 Domain
@@ -119,7 +144,7 @@
                             </div>
 
                             <div class="col-md-1">
-                                <button class="btn btn-secondary" (click)="remove(cookie)">X</button>
+                                <button class="btn btn-secondary" (click)="remove(cookie)"><i class="bi bi-trash"></i></button>
                             </div>
 
                         </div>

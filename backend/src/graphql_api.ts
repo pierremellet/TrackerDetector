@@ -19,9 +19,17 @@ export default class GraphqlAPI {
             name: String
             versions(filter: Int): [ApplicationVersion!]
         }
+        type ApplicationReport {
+            driftCookies: [CookieInstance!]
+        }
+        enum ApplicationURLType {
+            PREFIX
+            EXACT
+          }
         type ApplicationURL {
             id: ID
             url: String
+            type: ApplicationURLType
         }
         type ApplicationVersion {
             id: ID
@@ -29,6 +37,7 @@ export default class GraphqlAPI {
             enable: Boolean
             urls: [ApplicationURL!]
             cookies: [CookieTemplate!]
+            report: ApplicationReport
         } 
         type CookieTemplate {   
             id: ID
@@ -77,6 +86,7 @@ export default class GraphqlAPI {
         input URLInput{
             id: Int
             url: String
+            type: String
             disabled: Boolean
         } 
         input ApplicationVersionInput{
@@ -103,7 +113,9 @@ export default class GraphqlAPI {
             createApplicationVersion(appId: ID, versionName: String): ApplicationVersion
             updateApplication(appId: ID, appName: String): Application
             updateApplicationVersion(version: ApplicationVersionInput): ApplicationVersion
+            convertCookieInstanceToTemplate(versionId: ID, cookieInstanceId: ID): CookieTemplate
             deleteApplication(appId: ID):Application
+            deleteCookieInstancesForVersion(versionId: ID):Int
         }
         type Subscription {
             appVerCookieNotFounded(appVersionId: ID): CookieInstance
@@ -113,6 +125,12 @@ export default class GraphqlAPI {
 
         this.resolvers = {
             Mutation: {
+                convertCookieInstanceToTemplate: async (_: any, params: any): Promise<any> => {
+                    return await this.appController.convertCookieInstanceToTemplate(parseInt(params.versionId, 10), parseInt(params.cookieInstanceId, 10));
+                },
+                deleteCookieInstancesForVersion: async (_: any, params: any): Promise<any> => {
+                    return await this.appController.deleteCookieInstancesForVersion(parseInt(params.versionId, 10));
+                },
                 updateApplication: async (_: any, params: any): Promise<any> => {
                     return await this.appController.updateApplication(parseInt(params.appId, 10), params.appName);
                 },
@@ -164,6 +182,18 @@ export default class GraphqlAPI {
                 allCookieInstances: () => prisma.cookieInstance.findMany()
             },
             ApplicationVersion: {
+                report: async (appVersion: any, args: any) => {
+                    const driftCookies = await this.prisma.cookieInstance.findMany({
+                        where: {
+                            applicationVersion: {
+                                id : appVersion.id
+                            }
+                        }
+                    })
+                    return {
+                        "driftCookies": driftCookies
+                    };
+                },
                 urls: (appVersion: any) => prisma.application_URL.findMany({
                     where: {
                         applicationVersion: {

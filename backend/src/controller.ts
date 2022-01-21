@@ -2,9 +2,10 @@ import { Application, Application_Version, CookieInstance, CookieTemplate, Prism
 import { concatMap, groupBy, map, mergeAll, mergeMap, Observable, of, reduce, Subject, tap, windowCount } from "rxjs";
 import rootLogger from "./logger"
 import { AppConfig } from "./utils";
-import { PartialReport } from "./model";
+import { PartialReport, TrackedCookie } from "./model";
+import { version } from "graphql";
 export class TrackerFinderController {
-
+    
 
     private _log = rootLogger(this.config).getChildLogger({ name: "TrackerFinderController" });
 
@@ -20,7 +21,8 @@ export class TrackerFinderController {
     public driftedCookiesSubject = new Subject<{
         appId: number,
         versionId: number,
-        cookie: CookieInstance
+        url: string,
+        cookie: TrackedCookie
     }>();
 
     constructor(private config: AppConfig, private prisma: PrismaClient) {
@@ -41,18 +43,23 @@ export class TrackerFinderController {
             this.sanitizedPartialReportSubject.next(sanitizedReport);
         })
 
+
+
         // Process sanitized reports to find if report match with a version
         this.sanitizedPartialReportSubject.pipe(
             map(async report => {
                 const reportAndVersions: {
-                    versions: Promise<any[]>,
+                    versions: Application_Version[],
                     report: PartialReport
                 } = {
-                    'versions': this.prisma.application_Version.findMany({
+                    'versions': await this.prisma.application_Version.findMany({
                         where: {
                             urls: {
                                 some: {
-                                    url: report.url
+                                    url: report.url.trim(),
+                                    AND: {
+                                        type: "EXACT"
+                                    }
                                 }
                             }
                         },
@@ -65,44 +72,75 @@ export class TrackerFinderController {
                 }
                 return reportAndVersions;
             }),
-            concatMap(report => report),
-
-            tap(async reportAndVersion => {
-                const versions = await reportAndVersion.versions;
-                if (!versions || versions.length) {
-                    this._log.error(`No version found for report URL ${reportAndVersion.report.url}`);
-                }
+            concatMap(report => report)
+        ).subscribe(async (reportAndVersion) => {
+            const versions: Application_Version[] = reportAndVersion.versions;
+            if (!versions || versions.length == 0) {
+                this._log.error(`No version found for report URL ${reportAndVersion.report.url}`);
+            } else {
                 versions.forEach(version => {
                     reportAndVersion.report.cookies.forEach(cookieInstance => {
                         var match = false;
-                        version.cookies.forEach((cookieTemplate: CookieTemplate) => {
-                            var regex = new RegExp(cookieTemplate.nameRegex);
+                        (version as any).cookieTemplates.forEach((cookieTemplate: CookieTemplate) => {
+                            const regex = new RegExp(cookieTemplate.nameRegex);
                             if (cookieInstance.name.match(regex)) {
                                 match = true;
                             }
                         });
                         if (!match) {
                             this.driftedCookiesSubject.next({
-                                appId: version.application.id,
+                                appId: (version as any).application.id,
                                 versionId: version.id,
+                                url : reportAndVersion.report.url,
                                 cookie: cookieInstance
                             })
                         }
                     })
                 });
+            }
+        });
 
-
-
+        this.driftedCookiesSubject
+            .subscribe(drift => {
+                this.prisma.cookieInstance.create({
+                    data: {
+                        domain: drift.cookie.domain,
+                        hostOnly: drift.cookie.hostOnly,
+                        httpOnly: drift.cookie.httpOnly,
+                        name: drift.cookie.name,
+                        path: drift.cookie.path,
+                        secure: drift.cookie.secure,
+                        session: drift.cookie.session,
+                        timestamp: (new Date()).getTime(),
+                        url: drift.url,
+                        applicationVersion: {
+                            connect: {
+                                id: drift.versionId
+                            }
+                        }
+                    }
+                }).then(cookie => {
+                    this._log.info(`Save drifted Cookie : ${cookie.name}`)
+                })
             })
-        ).subscribe();
 
-     
+
     }
 
 
+    public deleteCookieInstancesForVersion(versionID: number): Promise<number> {
+        return this.prisma.cookieInstance.deleteMany({
+            where : {
+                applicationVersion : {
+                    id : versionID
+                }
+            }
+        }).then(res => res.count);
+    }
 
-    private dedupCookies(group: Observable<PartialReport>): CookieInstance[] {
-        const cookies: CookieInstance[] = [];
+
+    private dedupCookies(group: Observable<PartialReport>): TrackedCookie[] {
+        const cookies: TrackedCookie[] = [];
         group.forEach(report => {
             report.cookies.forEach(cookie => {
                 if (cookies.findIndex(c => c.name === cookie.name) === -1) {
@@ -130,6 +168,34 @@ export class TrackerFinderController {
         return report;
     }
 
+    async convertCookieInstanceToTemplate(versionId: number, cookieInstanceId: number) {
+        const cookieInstance = await this.prisma.cookieInstance.findUnique({
+            where : {
+                id : cookieInstanceId
+            }
+        })
+
+        if(cookieInstance){
+            return this.prisma.cookieTemplate.create({
+                data : {
+                    nameRegex : cookieInstance.name,
+                    domain : cookieInstance.domain,
+                    hostOnly : cookieInstance.hostOnly,
+                    path : cookieInstance.path,
+                    secure : cookieInstance.secure,
+                    httpOnly : cookieInstance.httpOnly,
+                    session : cookieInstance.session,
+                    applicationVersion : {
+                        connect : {
+                            id : versionId
+                        }
+                    }
+                }
+            })
+        }
+        return null;
+    }
+
 
     async createApplicationVersion(appId: number, versionName: string): Promise<Application_Version> {
         return await this.prisma.application_Version.create({
@@ -150,10 +216,12 @@ export class TrackerFinderController {
                     id: parseInt(u.id, 10) || 0
                 },
                 create: {
-                    url: u.url
+                    url: u.url,
+                    type: u.type
                 },
                 update: {
-                    url: u.url
+                    url: u.url,
+                    type: u.type
                 }
             }
         });

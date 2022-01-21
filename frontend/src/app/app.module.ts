@@ -12,6 +12,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { VersionListComponent } from './version-list/version-list.component';
 import { VersionEditComponent } from './version-edit/version-edit.component';
 import { ReportsComponent } from './reports/reports.component';
+import { ToastComponent } from './toast/toast.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { ReportsComponent } from './reports/reports.component';
     ApplicationEditComponent,
     VersionListComponent,
     VersionEditComponent,
-    ReportsComponent
+    ReportsComponent,
+    ToastComponent
   ],
   imports: [
     AppRoutingModule,

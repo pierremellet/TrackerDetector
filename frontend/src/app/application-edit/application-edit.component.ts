@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map, tap } from 'rxjs';
 import { GraphQLService } from '../graph-ql.service';
+import { ToastService } from '../toast.service';
 
 @Component({
   selector: 'app-application-edit',
@@ -19,7 +20,7 @@ export class ApplicationEditComponent implements OnInit {
   app: any;
   currentVersion: any;
 
-  constructor(private gql: GraphQLService, private route: ActivatedRoute, private router: Router) {
+  constructor(private gql: GraphQLService, private route: ActivatedRoute, private toast: ToastService,  private router: Router) {
   }
 
   deleteApp() {
@@ -52,7 +53,9 @@ export class ApplicationEditComponent implements OnInit {
     this.gql.sendQuery(queyString)
       .pipe(
         map((resp: any) => resp.data.createApplication)
-      ).subscribe();
+      ).subscribe(() => {
+        this.toast.show('Application', 'Updated !');
+      });
   }
 
   update(id: number) {
@@ -74,7 +77,7 @@ export class ApplicationEditComponent implements OnInit {
       ).subscribe(app => {
         this.app = app;
         this.appForm.get('appName')?.setValue(app.name);
-      })
+       })
     }
   }
 
