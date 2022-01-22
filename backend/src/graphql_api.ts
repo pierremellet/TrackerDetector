@@ -60,6 +60,7 @@ export default class GraphqlAPI {
             secure: Boolean
             session: Boolean
             timestamp: Int
+            url: String
         }
         input CookieTemplateInput {
             id: ID

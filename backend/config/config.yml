@@ -1,4 +1,4 @@
 endpoint: /graphql
 port: 3000
-input_buffer: 5
+input_buffer: 1
 log_level: "debug"

@@ -5,4 +5,4 @@ WORKDIR /app
 COPY . ./
 RUN yarn install && yarn build
 EXPOSE 3000
-CMD npx prisma generate && npx prisma db push && yarn start:prod
+CMD npx prisma generate && npx prisma db push --accept-data-loss && yarn start:prod

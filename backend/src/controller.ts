@@ -1,11 +1,11 @@
-import { Application, Application_Version, CookieInstance, CookieTemplate, Prisma, prisma, PrismaClient } from "@prisma/client";
-import { concatMap, groupBy, map, mergeAll, mergeMap, Observable, of, reduce, Subject, tap, windowCount } from "rxjs";
+import { Application, Application_URL, Application_Version, CookieInstance, CookieTemplate, Prisma, prisma, PrismaClient } from "@prisma/client";
+import { concatMap, groupBy, interval, map, mergeAll, mergeMap, Observable, of, reduce, Subject, tap, windowCount } from "rxjs";
 import rootLogger from "./logger"
 import { AppConfig } from "./utils";
 import { PartialReport, TrackedCookie } from "./model";
 import { version } from "graphql";
 export class TrackerFinderController {
-    
+
 
     private _log = rootLogger(this.config).getChildLogger({ name: "TrackerFinderController" });
 
@@ -25,7 +25,23 @@ export class TrackerFinderController {
         cookie: TrackedCookie
     }>();
 
+    public _URLPrefixIndex: (Application_URL & { applicationVersion: Application_Version; })[] = [];
+
     constructor(private config: AppConfig, private prisma: PrismaClient) {
+
+        //Index version URL prefix
+        interval(5000).subscribe(async () => {
+            this._URLPrefixIndex = [];
+
+            const urls = await this.prisma.application_URL.findMany({
+                include: {
+                    applicationVersion: true
+                }
+            });
+
+            this._URLPrefixIndex = urls;
+            this._log.debug(`Version cache updated`);
+        })
 
         // Process incomming partial report in order to group and aggregate reports by URL 
         this.rawPartialReportSubject.pipe(
@@ -48,40 +64,53 @@ export class TrackerFinderController {
         // Process sanitized reports to find if report match with a version
         this.sanitizedPartialReportSubject.pipe(
             map(async report => {
+
+                var matchVersionIds = this._URLPrefixIndex.filter(u => {
+                    if (u.type === "PREFIX") {
+                        return report.url.startsWith(u.url);
+                    }
+                    if (u.type === "EXACT") {
+                        return report.url === u.url;
+                    }
+                    return false;
+                }).map(v => v.applicationVersionId);
+
+
+ 
+                const matchVersions = await this.prisma.application_Version.findMany({
+                    where: {
+                        id: {
+                            in: matchVersionIds
+                        }
+                    },
+                    include: {
+                        cookieTemplates: true,
+                        application : true
+                    }
+                })
+
                 const reportAndVersions: {
-                    versions: Application_Version[],
+                    versions: (Application_Version & {
+                        cookieTemplates: CookieTemplate[];
+                        application: Application;
+                    })[],
                     report: PartialReport
                 } = {
-                    'versions': await this.prisma.application_Version.findMany({
-                        where: {
-                            urls: {
-                                some: {
-                                    url: report.url.trim(),
-                                    AND: {
-                                        type: "EXACT"
-                                    }
-                                }
-                            }
-                        },
-                        include: {
-                            cookieTemplates: true,
-                            application: true
-                        }
-                    }),
+                    'versions': matchVersions,
                     'report': report
                 }
                 return reportAndVersions;
             }),
             concatMap(report => report)
         ).subscribe(async (reportAndVersion) => {
-            const versions: Application_Version[] = reportAndVersion.versions;
+            const versions = reportAndVersion.versions;
             if (!versions || versions.length == 0) {
                 this._log.error(`No version found for report URL ${reportAndVersion.report.url}`);
             } else {
                 versions.forEach(version => {
                     reportAndVersion.report.cookies.forEach(cookieInstance => {
                         var match = false;
-                        (version as any).cookieTemplates.forEach((cookieTemplate: CookieTemplate) => {
+                        version.cookieTemplates.forEach((cookieTemplate: CookieTemplate) => {
                             const regex = new RegExp(cookieTemplate.nameRegex);
                             if (cookieInstance.name.match(regex)) {
                                 match = true;
@@ -89,9 +118,9 @@ export class TrackerFinderController {
                         });
                         if (!match) {
                             this.driftedCookiesSubject.next({
-                                appId: (version as any).application.id,
+                                appId: version.application.id,
                                 versionId: version.id,
-                                url : reportAndVersion.report.url,
+                                url: reportAndVersion.report.url,
                                 cookie: cookieInstance
                             })
                         }
@@ -130,9 +159,9 @@ export class TrackerFinderController {
 
     public deleteCookieInstancesForVersion(versionID: number): Promise<number> {
         return this.prisma.cookieInstance.deleteMany({
-            where : {
-                applicationVersion : {
-                    id : versionID
+            where: {
+                applicationVersion: {
+                    id: versionID
                 }
             }
         }).then(res => res.count);
@@ -170,24 +199,24 @@ export class TrackerFinderController {
 
     async convertCookieInstanceToTemplate(versionId: number, cookieInstanceId: number) {
         const cookieInstance = await this.prisma.cookieInstance.findUnique({
-            where : {
-                id : cookieInstanceId
+            where: {
+                id: cookieInstanceId
             }
         })
 
-        if(cookieInstance){
+        if (cookieInstance) {
             return this.prisma.cookieTemplate.create({
-                data : {
-                    nameRegex : cookieInstance.name,
-                    domain : cookieInstance.domain,
-                    hostOnly : cookieInstance.hostOnly,
-                    path : cookieInstance.path,
-                    secure : cookieInstance.secure,
-                    httpOnly : cookieInstance.httpOnly,
-                    session : cookieInstance.session,
-                    applicationVersion : {
-                        connect : {
-                            id : versionId
+                data: {
+                    nameRegex: cookieInstance.name,
+                    domain: cookieInstance.domain,
+                    hostOnly: cookieInstance.hostOnly,
+                    path: cookieInstance.path,
+                    secure: cookieInstance.secure,
+                    httpOnly: cookieInstance.httpOnly,
+                    session: cookieInstance.session,
+                    applicationVersion: {
+                        connect: {
+                            id: versionId
                         }
                     }
                 }
