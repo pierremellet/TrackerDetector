@@ -2,7 +2,6 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "build": "npx prisma generate && tsc --project ./",
     "start:dev": "nodemon src/server.ts",
