@@ -8,7 +8,7 @@
   },
   "scripts": {
     "install": "npm install --prefix ./frontend && yarn install --cwd ./backend",
-    "build": "npm build --prefix ./frontend && yarn build --cwd ./backend"
+    "build": "npm run build --prefix ./frontend && yarn build --cwd ./backend"
   },
   "repository": {
     "type": "git",
