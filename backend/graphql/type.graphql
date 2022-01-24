@@ -1,0 +1,51 @@
+type Configuration {
+  domains: [String!]!
+}
+type Application {
+  id: ID
+  name: String
+  versions(filter: Int): [ApplicationVersion!]
+}
+type ApplicationReport {
+  driftCookies: [CookieInstance!]
+}
+enum ApplicationURLType {
+  PREFIX
+  EXACT
+}
+type ApplicationURL {
+  id: ID
+  url: String
+  type: ApplicationURLType
+}
+type ApplicationVersion {
+  id: ID
+  name: String
+  enable: Boolean
+  urls: [ApplicationURL!]
+  cookies: [CookieTemplate!]
+  report: ApplicationReport
+}
+type CookieTemplate {
+  id: ID
+  nameRegex: String
+  domain: String
+  path: String
+  httpOnly: Boolean
+  hostOnly: Boolean
+  secure: Boolean
+  session: Boolean
+  disabled: Boolean
+}
+type CookieInstance {
+  id: ID
+  name: String
+  domain: String
+  path: String
+  httpOnly: Boolean
+  hostOnly: Boolean
+  secure: Boolean
+  session: Boolean
+  timestamp: Int
+  url: String
+}

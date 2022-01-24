@@ -3,133 +3,32 @@ import { concatMap, groupBy, interval, map, mergeAll, mergeMap, Observable, of, 
 import rootLogger from "./logger"
 import { AppConfig } from "./utils";
 import { PartialReport, TrackedCookie } from "./model";
-import { version } from "graphql";
+import topics from './topics';
+
 export class TrackerFinderController {
 
-
     private _log = rootLogger(this.config).getChildLogger({ name: "TrackerFinderController" });
-
-    /**
-     * Topic for received cookie pending processing
-     */
-    public rawPartialReportSubject = new Subject<PartialReport>();
-
-    // Topic for patial reports ready for processing
-    public sanitizedPartialReportSubject = new Subject<PartialReport>();
-
-    // Topic for observed cookies that doesn't correspond to the expectations of the version
-    public driftedCookiesSubject = new Subject<{
-        appId: number,
-        versionId: number,
-        url: string,
-        cookie: TrackedCookie
-    }>();
 
     public _URLPrefixIndex: (Application_URL & { applicationVersion: Application_Version; })[] = [];
 
     constructor(private config: AppConfig, private prisma: PrismaClient) {
 
-        //Index version URL prefix
-        interval(5000).subscribe(async () => {
-            this._URLPrefixIndex = [];
-
-            const urls = await this.prisma.application_URL.findMany({
-                include: {
-                    applicationVersion: true
-                }
-            });
-
-            this._URLPrefixIndex = urls;
-            this._log.debug(`Version cache updated`);
-        })
+        // Index version URL prefix
+        this.updateURLIndexOnApplicationVersionUpdate();
 
         // Process incomming partial report in order to group and aggregate reports by URL 
-        this.rawPartialReportSubject.pipe(
-            tap(report => this._log.debug(`Partial report received for URL : ${report.url}`)),
-            map(report => this.removeURLParams(report)),
-            windowCount(config.input_buffer),
-            map(win => win.pipe(
-                groupBy(report => report.url),
-                mergeMap(group => {
-                    return of(new PartialReport(group.key, this.dedupCookies(group)));
-                })
-            )),
-            mergeAll()
-        ).subscribe(sanitizedReport => {
-            this.sanitizedPartialReportSubject.next(sanitizedReport);
-        })
-
-
+        this.handleIncommingReports(config);
 
         // Process sanitized reports to find if report match with a version
-        this.sanitizedPartialReportSubject.pipe(
-            map(async report => {
+        this.handleIncommingSanitizedReports();
 
-                var matchVersionIds = this._URLPrefixIndex.filter(u => {
-                    if (u.type === "PREFIX") {
-                        return report.url.startsWith(u.url);
-                    }
-                    if (u.type === "EXACT") {
-                        return report.url === u.url;
-                    }
-                    return false;
-                }).map(v => v.applicationVersionId);
+        // Process cookie doesn't match any application requirement
+        this.handleDriftCookies();
+    }
 
 
- 
-                const matchVersions = await this.prisma.application_Version.findMany({
-                    where: {
-                        id: {
-                            in: matchVersionIds
-                        }
-                    },
-                    include: {
-                        cookieTemplates: true,
-                        application : true
-                    }
-                })
-
-                const reportAndVersions: {
-                    versions: (Application_Version & {
-                        cookieTemplates: CookieTemplate[];
-                        application: Application;
-                    })[],
-                    report: PartialReport
-                } = {
-                    'versions': matchVersions,
-                    'report': report
-                }
-                return reportAndVersions;
-            }),
-            concatMap(report => report)
-        ).subscribe(async (reportAndVersion) => {
-            const versions = reportAndVersion.versions;
-            if (!versions || versions.length == 0) {
-                this._log.error(`No version found for report URL ${reportAndVersion.report.url}`);
-            } else {
-                versions.forEach(version => {
-                    reportAndVersion.report.cookies.forEach(cookieInstance => {
-                        var match = false;
-                        version.cookieTemplates.forEach((cookieTemplate: CookieTemplate) => {
-                            const regex = new RegExp(cookieTemplate.nameRegex);
-                            if (cookieInstance.name.match(regex)) {
-                                match = true;
-                            }
-                        });
-                        if (!match) {
-                            this.driftedCookiesSubject.next({
-                                appId: version.application.id,
-                                versionId: version.id,
-                                url: reportAndVersion.report.url,
-                                cookie: cookieInstance
-                            })
-                        }
-                    })
-                });
-            }
-        });
-
-        this.driftedCookiesSubject
+    private handleDriftCookies() {
+        topics.driftCookiesSubject
             .subscribe(drift => {
                 this.prisma.cookieInstance.create({
                     data: {
@@ -149,13 +48,109 @@ export class TrackerFinderController {
                         }
                     }
                 }).then(cookie => {
-                    this._log.info(`Save drifted Cookie : ${cookie.name}`)
-                })
-            })
-
-
+                    this._log.info(`Save drift Cookie for version id(${drift.versionId}), with id(${cookie.id}) and name(${cookie.name})`);
+                }).catch(err => this._log.error(err));
+            });
     }
 
+    private handleIncommingSanitizedReports() {
+        topics.sanitizedPartialReportSubject.pipe(
+            map(async (report) => {
+
+                var matchVersionIds = this._URLPrefixIndex.filter(u => {
+                    if (u.type === "PREFIX") {
+                        return report.url.startsWith(u.url);
+                    }
+                    if (u.type === "EXACT") {
+                        return report.url === u.url;
+                    }
+                    return false;
+                }).map(v => v.applicationVersionId);
+
+                const matchVersions = await this.prisma.application_Version.findMany({
+                    where: {
+                        id: {
+                            in: matchVersionIds
+                        }
+                    },
+                    include: {
+                        cookieTemplates: true,
+                        application: true
+                    }
+                });
+
+                const reportAndVersions: {
+                    versions: (Application_Version & {
+                        cookieTemplates: CookieTemplate[];
+                        application: Application;
+                    })[];
+                    report: PartialReport;
+                } = {
+                    'versions': matchVersions,
+                    'report': report
+                };
+                return reportAndVersions;
+            }),
+            concatMap(report => report)
+        ).subscribe(async (reportAndVersion) => {
+            const versions = reportAndVersion.versions;
+            if (!versions || versions.length == 0) {
+                this._log.error(`No version found for report URL ${reportAndVersion.report.url}`);
+            } else {
+                versions.forEach(version => {
+                    reportAndVersion.report.cookies.forEach(cookieInstance => {
+                        var match = false;
+                        version.cookieTemplates.forEach((cookieTemplate: CookieTemplate) => {
+                            const regex = new RegExp(cookieTemplate.nameRegex);
+                            if (cookieInstance.name.match(regex)) {
+                                match = true;
+                            }
+                        });
+                        if (!match) {
+                            topics.driftCookiesSubject.next({
+                                appId: version.application.id,
+                                versionId: version.id,
+                                url: reportAndVersion.report.url,
+                                cookie: cookieInstance
+                            });
+                        }
+                    });
+                });
+            }
+        });
+    }
+
+    private handleIncommingReports(config: AppConfig) {
+        topics.rawPartialReportSubject.pipe(
+            tap(report => this._log.debug(`Partial report received for URL : ${report.url}`)),
+            map(report => this.removeURLParams(report)),
+            windowCount(config.input_buffer),
+            map(win => win.pipe(
+                groupBy(report => report.url),
+                mergeMap(group => {
+                    return of(new PartialReport(group.key, this.dedupCookies(group)));
+                })
+            )),
+            mergeAll()
+        ).subscribe(sanitizedReport => {
+            topics.sanitizedPartialReportSubject.next(sanitizedReport);
+        });
+    }
+
+    private updateURLIndexOnApplicationVersionUpdate() {
+        topics.applicationVersionChanged.subscribe(async () => {
+            this._URLPrefixIndex = [];
+
+            const urls = await this.prisma.application_URL.findMany({
+                include: {
+                    applicationVersion: true
+                }
+            });
+
+            this._URLPrefixIndex = urls;
+            this._log.debug(`Version cache updated`);
+        });
+    }
 
     public deleteCookieInstancesForVersion(versionID: number): Promise<number> {
         return this.prisma.cookieInstance.deleteMany({

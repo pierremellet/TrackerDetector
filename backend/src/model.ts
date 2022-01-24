@@ -7,7 +7,15 @@ export class PartialReport {
 
 }
 
+export class DriftCookie {
+    constructor( 
+        public appId: number,
+        public versionId: number,
+        public  url: string,
+        public cookie: TrackedCookie 
+    ){}
 
+}
 export class TrackedCookie {
 
     constructor(

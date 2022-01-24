@@ -2,3 +2,4 @@ endpoint: /graphql
 port: 3000
 input_buffer: 1
 log_level: "debug"
+graphql_schema_dir: ./graphql

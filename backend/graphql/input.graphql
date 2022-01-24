@@ -1,0 +1,40 @@
+
+input CookieTemplateInput {
+  id: ID
+  nameRegex: String
+  domain: String
+  path: String
+  httpOnly: Boolean
+  hostOnly: Boolean
+  secure: Boolean
+  session: Boolean
+  disabled: Boolean
+}
+input CookieInstanceInput {
+  id: ID
+  name: String
+  domain: String
+  path: String
+  httpOnly: Boolean
+  hostOnly: Boolean
+  secure: Boolean
+  session: Boolean
+  timetamp: Int
+}
+input URLInput {
+  id: Int
+  url: String
+  type: String
+  disabled: Boolean
+}
+input ApplicationVersionInput {
+  id: Int
+  name: String
+  enable: Boolean
+  urls: [URLInput!]
+  cookies: [CookieTemplateInput!]
+}
+input PartialReport {
+  url: String!
+  cookies: [CookieInstanceInput!]!
+}

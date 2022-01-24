@@ -1,6 +1,5 @@
 import { TrackerFinderController } from './controller';
 import { PrismaClient } from '@prisma/client';
-import GQLSetup from './graphql_api';
 import { PubSub } from 'graphql-subscriptions';
 import express from 'express';
 import cors from 'cors';
@@ -13,48 +12,28 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import yaml from 'js-yaml';
 import fs from 'fs';
 import { AppConfig } from './utils';
-import { COOKIE_APP_NOT_EXIST } from './events';
+import GQLSetup from './graphql_resolvers';
 class App {
 
   private config: AppConfig = yaml.load(fs.readFileSync('config/config.yml', 'utf8')) as AppConfig;
   private _log = rootLogger(this.config).getChildLogger({ name: "TrackerFinderController" });
 
   async start() {
+
     const pubsub = new PubSub();
 
-    const prisma = new PrismaClient({
-      log: [
-        {
-          emit: 'event',
-          level: 'query',
-        },
-        {
-          emit: 'stdout',
-          level: 'error',
-        },
-        {
-          emit: 'stdout',
-          level: 'info',
-        },
-        {
-          emit: 'stdout',
-          level: 'warn',
-        },
-      ],
-    });
-
-    
+    const prisma = new PrismaClient();
 
     const controller = new TrackerFinderController(this.config, prisma);
 
-    controller.driftedCookiesSubject.subscribe(drift => {
-      pubsub.publish(COOKIE_APP_NOT_EXIST + drift.appId, { appCookieNotFound: drift.cookie.name });
-    })
-    const gqlController = new GQLSetup(pubsub, prisma, controller);
+    const gqlController = new GQLSetup(this.config, pubsub, prisma, controller);
     const typeDefs = gqlController.typeDefs;
     const resolvers = gqlController.resolvers;
 
-    const schema = makeExecutableSchema({ typeDefs, resolvers });
+    const schema = makeExecutableSchema({
+      typeDefs,
+      resolvers
+    });
 
     const app = express();
     app.use(cors());

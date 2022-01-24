@@ -1,0 +1,24 @@
+type Query {
+  allApplications: [Application!]!
+  findApplication(id: Int): Application
+  allCookieTemplates: [CookieTemplate!]!
+  allCookieInstances: [CookieInstance!]!
+  configuration: Configuration
+}
+type Mutation {
+  createPartialReport(input: PartialReport): String
+  createApplication(appName: String): Application
+  createApplicationVersion(appId: ID, versionName: String): ApplicationVersion
+  updateApplication(appId: ID, appName: String): Application
+  updateApplicationVersion(version: ApplicationVersionInput): ApplicationVersion
+  convertCookieInstanceToTemplate(
+    versionId: ID
+    cookieInstanceId: ID
+  ): CookieTemplate
+  deleteApplication(appId: ID): Application
+  deleteCookieInstancesForVersion(versionId: ID): Int
+}
+type Subscription {
+  appVerCookieNotFounded(appVersionId: ID): CookieInstance
+  appCookieNotFounded(appId: ID): CookieInstance
+}

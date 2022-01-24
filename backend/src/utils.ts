@@ -19,7 +19,8 @@ class AppConfig {
       public port: number,
       public endpoint: string,
       public input_buffer: number,
-      public log_level: string
+      public log_level: string,
+      public graphql_schema_dir: string
     ) { }
   
   }

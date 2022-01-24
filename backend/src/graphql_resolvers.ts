@@ -1,128 +1,19 @@
 import { Application, CookieInstance, PrismaClient } from "@prisma/client";
 import { TrackerFinderController } from "./controller";
 import { PubSub } from 'graphql-subscriptions';
-import { extractHostname } from "./utils";
-import { COOKIE_APP_NOT_EXIST } from "./events";
+import { AppConfig, extractHostname } from "./utils";
+import * as fs from 'fs';
+import topics from './topics';
+import * as path from 'path';
 
 export default class GraphqlAPI {
 
-    public typeDefs: string;
+    public typeDefs: any[];
     public resolvers: any;
 
-    constructor(protected pubsub: PubSub, protected prisma: PrismaClient, protected appController: TrackerFinderController) {
-        this.typeDefs = `
-        type Configuration {
-            domains: [String!]!
-        }
-        type Application {
-            id: ID
-            name: String
-            versions(filter: Int): [ApplicationVersion!]
-        }
-        type ApplicationReport {
-            driftCookies: [CookieInstance!]
-        }
-        enum ApplicationURLType {
-            PREFIX
-            EXACT
-          }
-        type ApplicationURL {
-            id: ID
-            url: String
-            type: ApplicationURLType
-        }
-        type ApplicationVersion {
-            id: ID
-            name: String
-            enable: Boolean
-            urls: [ApplicationURL!]
-            cookies: [CookieTemplate!]
-            report: ApplicationReport
-        } 
-        type CookieTemplate {   
-            id: ID
-            nameRegex: String
-            domain: String
-            path: String
-            httpOnly: Boolean
-            hostOnly: Boolean
-            secure: Boolean
-            session: Boolean
-            disabled: Boolean
-        }
-        type CookieInstance {
-            id: ID
-            name: String
-            domain: String
-            path: String
-            httpOnly: Boolean
-            hostOnly: Boolean
-            secure: Boolean
-            session: Boolean
-            timestamp: Int
-            url: String
-        }
-        input CookieTemplateInput {
-            id: ID
-            nameRegex: String
-            domain: String
-            path: String
-            httpOnly: Boolean
-            hostOnly: Boolean
-            secure: Boolean
-            session: Boolean
-            disabled: Boolean
-        }
-        input CookieInstanceInput {
-            id: ID
-            name: String
-            domain: String
-            path: String
-            httpOnly: Boolean
-            hostOnly: Boolean
-            secure: Boolean
-            session: Boolean
-            timetamp: Int
-        }
-        input URLInput{
-            id: Int
-            url: String
-            type: String
-            disabled: Boolean
-        } 
-        input ApplicationVersionInput{
-            id: Int
-            name: String
-            enable: Boolean
-            urls: [URLInput!]
-            cookies: [CookieTemplateInput!]
-        }
-        input PartialReport {
-            url: String
-            cookies: [CookieInstanceInput!]!
-        }
-        type Query {
-            allApplications: [Application!]!
-            findApplication(id: Int): Application
-            allCookieTemplates: [CookieTemplate!]!
-            allCookieInstances: [CookieInstance!]!
-            configuration: Configuration
-        }
-        type Mutation {
-            createPartialReport(input: PartialReport): String
-            createApplication(appName: String): Application
-            createApplicationVersion(appId: ID, versionName: String): ApplicationVersion
-            updateApplication(appId: ID, appName: String): Application
-            updateApplicationVersion(version: ApplicationVersionInput): ApplicationVersion
-            convertCookieInstanceToTemplate(versionId: ID, cookieInstanceId: ID): CookieTemplate
-            deleteApplication(appId: ID):Application
-            deleteCookieInstancesForVersion(versionId: ID):Int
-        }
-        type Subscription {
-            appVerCookieNotFounded(appVersionId: ID): CookieInstance
-            appCookieNotFounded(appId: ID): CookieInstance
-        }
-        `;
+    constructor(protected config: AppConfig, protected pubsub: PubSub, protected prisma: PrismaClient, protected appController: TrackerFinderController) {
+
+        this.typeDefs = importSchema(config.graphql_schema_dir);
 
         this.resolvers = {
             Mutation: {
@@ -146,7 +37,7 @@ export default class GraphqlAPI {
                 },
                 createPartialReport: (_: any, params: any) => {
                     const prms: Promise<CookieInstance>[] = [];
-                    this.appController.rawPartialReportSubject.next(params.input);
+                    topics.rawPartialReportSubject.next(params.input);
                     return "ok";
                 },
                 createApplication: async (_: any, params: any) => {
@@ -187,7 +78,7 @@ export default class GraphqlAPI {
                     const driftCookies = await this.prisma.cookieInstance.findMany({
                         where: {
                             applicationVersion: {
-                                id : appVersion.id
+                                id: appVersion.id
                             }
                         }
                     })
@@ -224,7 +115,7 @@ export default class GraphqlAPI {
             },
             Subscription: {
                 appCookieNotFounded: {
-                    subscribe: (parent: any, args: any, context: any) => pubsub.asyncIterator(COOKIE_APP_NOT_EXIST + args.appId)
+                    subscribe: (parent: any, args: any, context: any) => pubsub.asyncIterator(args.appId)
                 }
             }
         };
@@ -233,3 +124,16 @@ export default class GraphqlAPI {
 
 
 }
+
+function importSchema(schemaFolder: string): string[] {
+    const res: string[] = [];
+    const dir = fs.readdirSync(schemaFolder);
+    dir.forEach(file => {
+        res.push(fs.readFileSync(path.join(schemaFolder, file), {
+            encoding: 'utf-8'
+        }))
+    });
+    return res;
+}
+
+

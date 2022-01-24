@@ -72,6 +72,7 @@ export class ReportsComponent implements OnInit {
     this.gql.sendQuery(query)
     .subscribe(() => {
       this.toast.show("Template Created !", `Cookie ${cookie.name} converted to template`); 
+      cookie.hide = true;
     });
   }
 

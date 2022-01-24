@@ -28,7 +28,9 @@ export class ApplicationEditComponent implements OnInit {
 
       const queyString = `
       mutation {
-        deleteApplication(appId: "${this.app.id}")
+        deleteApplication(appId: "${this.app.id}"){
+          id
+        }
       }`;
   
       this.gql.sendQuery(queyString)
