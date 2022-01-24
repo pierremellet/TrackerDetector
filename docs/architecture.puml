@@ -1,5 +1,5 @@
 @startuml
-interface gql as "Graph QL"
+interface gql as "Graph QL API"
 database db as "Database"
 
 [backend] -up- gql
