@@ -24,7 +24,6 @@ model Application_Version {
   urls                  Application_URL[]
   cookieTemplates       CookieTemplate[]
   unknowCookieInstances CookieInstance[]
-  unknowURLInstances    URLInstance[]
   enable                Boolean           @default(true)
 
   @@unique([name, applicationId])
@@ -79,7 +78,6 @@ model CookieInstance {
 model URLInstance {
   id                   Int                 @id @default(autoincrement())
   url                  String
-  applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
-  applicationVersionId Int
-  @@unique([url, applicationVersionId])
+  created              DateTime            @db.Timestamptz(3)
+  @@unique([url])
 }

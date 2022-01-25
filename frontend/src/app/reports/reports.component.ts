@@ -11,25 +11,13 @@ import { ToastService } from '../toast.service';
 })
 export class ReportsComponent implements OnInit {
 
-  public applications: Array<any> = [];
-  public currentApplication: any | undefined;
-  public currentApplicationId: number | undefined = undefined;
   public logs: Array<string> = [];
   public socket: WebSocket | undefined = undefined;
 
-  constructor(public gql: GraphQLService, private toast: ToastService) { }
+  constructor() { }
 
   ngOnInit(): void {
-    const allApplicationsQuery = `{
-      allApplications{
-        id
-        name
-      }
-    }`;
-
-    this.gql.sendQuery(allApplicationsQuery).pipe(
-      map((resp: any) => resp.data.allApplications)
-    ).subscribe(applications => this.applications = applications);
+   
   };
 
 
@@ -61,64 +49,5 @@ export class ReportsComponent implements OnInit {
     return exampleSocket;
   }
 
-  convertToTemplate(version: any, cookie: any) {
-    const query = `
-    mutation {
-      convertCookieInstanceToTemplate(versionId: ${version.id}, cookieInstanceId: ${cookie.id}){
-        id
-      }
-    }`;
-
-    this.gql.sendQuery(query)
-    .subscribe(() => {
-      this.toast.show("Template Created !", `Cookie ${cookie.name} converted to template`); 
-      cookie.hide = true;
-    });
-  }
-
-  update(appId: any) {
-    const query = `{
-      findApplication(id: ${appId}){
-        versions {
-          id
-          name
-          report {
-            driftCookies {
-              id
-              name
-              domain
-              url
-            }
-          }
-        }
-      }
-    }`;
-
-    this.gql.sendQuery(query).pipe(
-      map(resp => resp.data.findApplication)
-    ).subscribe(app => this.currentApplication = app);
-  }
-
-  cleanUp(version: any) {
-    const query = `
-    mutation {
-      deleteCookieInstancesForVersion(versionId: ${version.id})
-    }`;
-
-    this.gql.sendQuery(query).pipe(
-      map(resp => resp.data.deleteCookieInstancesForVersion)
-    ).subscribe(nb => {
-      this.toast.show("Version cleanup", `${nb} cookies removed !`);
-      version.report.driftCookies = [];
-    });
-
-  };
-
-  onApplicationChange(event: any) {
-
-    const appId = event.target.value as number;
-
-    this.update(appId);
-  }
 
 }

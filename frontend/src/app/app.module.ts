@@ -13,6 +13,8 @@ import { VersionListComponent } from './version-list/version-list.component';
 import { VersionEditComponent } from './version-edit/version-edit.component';
 import { ReportsComponent } from './reports/reports.component';
 import { ToastComponent } from './toast/toast.component';
+import { UnknowurlsComponent } from './reports/unknowurls/unknowurls.component';
+import { ApplicationversionComponent } from './reports/applicationversion/applicationversion.component';
 
 @NgModule({
   declarations: [
@@ -24,7 +26,9 @@ import { ToastComponent } from './toast/toast.component';
     VersionListComponent,
     VersionEditComponent,
     ReportsComponent,
-    ToastComponent
+    ToastComponent,
+    UnknowurlsComponent,
+    ApplicationversionComponent
   ],
   imports: [
     AppRoutingModule,

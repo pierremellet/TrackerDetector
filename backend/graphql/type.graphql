@@ -49,3 +49,12 @@ type CookieInstance {
   timestamp: Int
   url: String
 }
+
+scalar Date
+
+
+type UnknowURL {
+  id: ID
+  url: String
+  created: Date
+}

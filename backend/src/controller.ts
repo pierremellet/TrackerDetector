@@ -1,5 +1,5 @@
 import { Application, Application_URL, Application_Version, CookieInstance, CookieTemplate, Prisma, prisma, PrismaClient } from "@prisma/client";
-import { concatMap, groupBy, interval, map, mergeAll, mergeMap, Observable, of, reduce, Subject, tap, windowCount } from "rxjs";
+import { bufferTime, concatMap, groupBy, interval, map, mergeAll, mergeMap, Observable, of, reduce, Subject, tap, windowCount, windowTime } from "rxjs";
 import rootLogger from "./logger"
 import { AppConfig } from "./utils";
 import { PartialReport, TrackedCookie } from "./model";
@@ -24,8 +24,34 @@ export class TrackerFinderController {
 
         // Process cookie doesn't match any application requirement
         this.handleDriftCookies();
+
+
+        this.handleUnknowURL();
     }
 
+
+    private handleUnknowURL() {
+        topics.unknowURLSubject
+            .pipe(
+                bufferTime(10000)
+            )
+            .subscribe(async urls => {
+                if (urls && urls.length > 0) {
+                    const data = urls.map(u => {
+                        return {
+                            url: u,
+                            created: new Date()
+                        }
+                    })
+                    try {
+                        const res = await this.prisma.uRLInstance.createMany({
+                            data
+                        })
+                        this._log.debug(`Save ${res.count} unknow URLs`);
+                    } catch (err) { }
+                }
+            });
+    }
 
     private handleDriftCookies() {
         topics.driftCookiesSubject

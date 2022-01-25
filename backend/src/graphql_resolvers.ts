@@ -71,7 +71,8 @@ export default class GraphqlAPI {
                     })
                 },
                 allCookieTemplates: () => prisma.cookieTemplate.findMany(),
-                allCookieInstances: () => prisma.cookieInstance.findMany()
+                allCookieInstances: () => prisma.cookieInstance.findMany(),
+                allUnknowURLs: () => prisma.uRLInstance.findMany()
             },
             ApplicationVersion: {
                 report: async (appVersion: any, args: any) => {

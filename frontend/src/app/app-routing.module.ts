@@ -2,15 +2,29 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ApplicationEditComponent } from './application-edit/application-edit.component';
 import { ApplicationListComponent } from './application-list/application-list.component';
+import { ApplicationversionComponent } from './reports/applicationversion/applicationversion.component';
 import { ReportsComponent } from './reports/reports.component';
+import { UnknowurlsComponent } from './reports/unknowurls/unknowurls.component';
 import { VersionEditComponent } from './version-edit/version-edit.component';
 
 const routes: Routes = [
-  {path: 'applications', component: ApplicationListComponent },
-  {path: 'applications/:id', component: ApplicationEditComponent },
-  {path: 'applications/:appId/versions/:verId', component: VersionEditComponent },
-  {path: 'reports', component: ReportsComponent },
-  {path: '**', redirectTo: '/applications', pathMatch: 'full' }, 
+  { path: 'applications', component: ApplicationListComponent },
+  { path: 'applications/:id', component: ApplicationEditComponent },
+  { path: 'applications/:appId/versions/:verId', component: VersionEditComponent },
+  {
+    path: 'reports', component: ReportsComponent, children: [
+      { path: '', redirectTo: 'applications', pathMatch: 'full' },
+      {
+        path: 'applications', // child route path
+        component: ApplicationversionComponent, // child route component that the router renders
+      },
+      {
+        path: 'unknowurls',
+        component: UnknowurlsComponent, // another child route component that the router renders
+      },
+    ],
+  },
+  { path: '**', redirectTo: '/applications', pathMatch: 'full' },
 ];
 
 @NgModule({

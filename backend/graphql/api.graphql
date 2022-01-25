@@ -3,9 +3,11 @@ type Query {
   findApplication(id: Int): Application
   allCookieTemplates: [CookieTemplate!]!
   allCookieInstances: [CookieInstance!]!
+  allUnknowURLs: [UnknowURL!]!
   configuration: Configuration
 }
 type Mutation {
+  # Allow report creation
   createPartialReport(input: PartialReport): String
   createApplication(appName: String): Application
   createApplicationVersion(appId: ID, versionName: String): ApplicationVersion
