@@ -10,7 +10,7 @@
     "build:front":"npm run build --prefix ./frontend",
     "build:back":"yarn build --cwd ./backend",
     "install": "npm install --prefix ./frontend && yarn install --cwd ./backend",
-    "build": "npm run build:front && npm run build:back"
+    "build": "npm run build:front"
   },
   "repository": {
     "type": "git",
