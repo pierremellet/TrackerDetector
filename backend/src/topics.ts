@@ -12,6 +12,8 @@ export default {
     // Topic for observed cookies that doesn't correspond to the expectations of the version
     driftCookiesSubject: new Subject<DriftCookie>(),
 
+    // Topic for URL that not match an application version
+    unknowURLSubject: new Subject<string>(),
 
     /**
      * Topic triggerd when application version is updated

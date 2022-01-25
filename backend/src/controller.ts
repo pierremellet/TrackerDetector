@@ -67,6 +67,7 @@ export class TrackerFinderController {
                     return false;
                 }).map(v => v.applicationVersionId);
 
+                // Expand matchVersionIds with data from db
                 const matchVersions = await this.prisma.application_Version.findMany({
                     where: {
                         id: {
@@ -96,6 +97,7 @@ export class TrackerFinderController {
             const versions = reportAndVersion.versions;
             if (!versions || versions.length == 0) {
                 this._log.error(`No version found for report URL ${reportAndVersion.report.url}`);
+                topics.unknowURLSubject.next(reportAndVersion.report.url);
             } else {
                 versions.forEach(version => {
                     reportAndVersion.report.cookies.forEach(cookieInstance => {
