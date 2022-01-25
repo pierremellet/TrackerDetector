@@ -7,8 +7,10 @@
     "doc": "docs"
   },
   "scripts": {
+    "build:front":"npm run build --prefix ./frontend",
+    "build:back":"yarn build --cwd ./backend",
     "install": "npm install --prefix ./frontend && yarn install --cwd ./backend",
-    "build": "npm run build --prefix ./frontend && yarn build --cwd ./backend"
+    "build": "npm run build:front && npm run build:back"
   },
   "repository": {
     "type": "git",
