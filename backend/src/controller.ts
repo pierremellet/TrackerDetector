@@ -1,4 +1,4 @@
-import { Application, Application_URL, Application_Version, CookieInstance, CookieTemplate, Prisma, prisma, PrismaClient } from "@prisma/client";
+import { Application, Application_URL, Application_URL_Type, Application_Version, CookieInstance, CookieTemplate, Prisma, prisma, PrismaClient } from "@prisma/client";
 import { bufferTime, concatMap, groupBy, interval, map, mergeAll, mergeMap, Observable, of, reduce, Subject, tap, windowCount, windowTime } from "rxjs";
 import rootLogger from "./logger"
 import { AppConfig } from "./utils";
@@ -9,7 +9,7 @@ export class TrackerFinderController {
 
     private _log = rootLogger(this.config).getChildLogger({ name: "TrackerFinderController" });
 
-    public _URLPrefixIndex: (Application_URL & { applicationVersion: Application_Version; })[] = [];
+    public _URLPrefixIndex: (Application_URL & { applicationVersion: Application_Version | null; })[] = [];
 
     constructor(private config: AppConfig, private prisma: PrismaClient) {
 
@@ -33,22 +33,28 @@ export class TrackerFinderController {
     private handleUnknowURL() {
         topics.unknowURLSubject
             .pipe(
-                bufferTime(10000)
+                bufferTime(1000)
             )
             .subscribe(async urls => {
                 if (urls && urls.length > 0) {
+                    this._log.debug(`${urls.length} unknow urls to save`);
                     const data = urls.map(u => {
                         return {
                             url: u,
+                            type: Application_URL_Type.EXACT,
                             created: new Date()
                         }
+                    }).forEach(async d => {
+                        try {
+                            const res = await this.prisma.application_URL.create({
+                                data: d
+                            })
+                            this._log.debug(`Save unknow URLs id(${res.id})`);
+                        } catch (err) {
+                            //this._log.debug(err);
+                        }
                     })
-                    try {
-                        const res = await this.prisma.uRLInstance.createMany({
-                            data
-                        })
-                        this._log.debug(`Save ${res.count} unknow URLs`);
-                    } catch (err) { }
+
                 }
             });
     }
@@ -75,7 +81,7 @@ export class TrackerFinderController {
                     }
                 }).then(cookie => {
                     this._log.info(`Save drift Cookie for version id(${drift.versionId}), with id(${cookie.id}) and name(${cookie.name})`);
-                }).catch(err => this._log.error(err));
+                });
             });
     }
 
@@ -83,15 +89,17 @@ export class TrackerFinderController {
         topics.sanitizedPartialReportSubject.pipe(
             map(async (report) => {
 
-                var matchVersionIds = this._URLPrefixIndex.filter(u => {
-                    if (u.type === "PREFIX") {
-                        return report.url.startsWith(u.url);
-                    }
-                    if (u.type === "EXACT") {
-                        return report.url === u.url;
-                    }
-                    return false;
-                }).map(v => v.applicationVersionId);
+                var matchVersionIds = this._URLPrefixIndex
+                    .filter(u => u.applicationVersionId !== null)
+                    .filter(u => {
+                        if (u.type === "PREFIX") {
+                            return report.url.startsWith(u.url);
+                        }
+                        if (u.type === "EXACT") {
+                            return report.url === u.url;
+                        }
+                        return false;
+                    }).map(v => v.applicationVersionId as number);
 
                 // Expand matchVersionIds with data from db
                 const matchVersions = await this.prisma.application_Version.findMany({
@@ -170,6 +178,11 @@ export class TrackerFinderController {
             this._URLPrefixIndex = [];
 
             const urls = await this.prisma.application_URL.findMany({
+                where: {
+                    applicationVersion: {
+                        isNot: null
+                    }
+                },
                 include: {
                     applicationVersion: true
                 }
@@ -202,14 +215,6 @@ export class TrackerFinderController {
         });
         return cookies;
     }
-
-    private accDeduplicate(acc: CookieInstance[], val: CookieInstance): CookieInstance[] {
-        if (acc.findIndex(c => c.name === val.name) === -1) {
-            acc.push(val);
-        }
-        return acc;
-    }
-
 
 
     private removeURLParams(report: PartialReport): PartialReport {
@@ -248,7 +253,6 @@ export class TrackerFinderController {
         return null;
     }
 
-
     async createApplicationVersion(appId: number, versionName: string): Promise<Application_Version> {
         return await this.prisma.application_Version.create({
             data: {
@@ -261,6 +265,18 @@ export class TrackerFinderController {
             }
         });
     }
+
+    async linkApplicationURLToVersion(versionId:number, applicationURLId : number): Promise<Application_URL>{
+        return this.prisma.application_URL.update({
+            where : {
+                id : applicationURLId
+            },
+            data : {
+                applicationVersionId : versionId
+            }
+        })
+    }
+
     async updateApplicationVersion(version: any): Promise<Application_Version> {
         const urlsData = version.urls.filter((u: any) => !u.disabled).map((u: any) => {
             return {
@@ -269,7 +285,8 @@ export class TrackerFinderController {
                 },
                 create: {
                     url: u.url,
-                    type: u.type
+                    type: u.type,
+                    created: new Date()
                 },
                 update: {
                     url: u.url,

@@ -31,8 +31,8 @@ input ApplicationVersionInput {
   id: Int
   name: String
   enable: Boolean
-  urls: [URLInput!]
-  cookies: [CookieTemplateInput!]
+  urls: [URLInput!]!
+  cookies: [CookieTemplateInput!]!
 }
 input PartialReport {
   url: String!

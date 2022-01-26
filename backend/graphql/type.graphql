@@ -13,10 +13,14 @@ enum ApplicationURLType {
   PREFIX
   EXACT
 }
+
+scalar Date
+
 type ApplicationURL {
   id: ID
   url: String
   type: ApplicationURLType
+  created: Date
 }
 type ApplicationVersion {
   id: ID
@@ -48,13 +52,4 @@ type CookieInstance {
   session: Boolean
   timestamp: Int
   url: String
-}
-
-scalar Date
-
-
-type UnknowURL {
-  id: ID
-  url: String
-  created: Date
 }

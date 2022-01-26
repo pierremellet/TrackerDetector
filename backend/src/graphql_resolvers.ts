@@ -42,6 +42,9 @@ export default class GraphqlAPI {
                 },
                 createApplication: async (_: any, params: any) => {
                     return await this.appController.createApplication(params.appName);
+                },
+                linkApplicationURLToVersion: async (_:any, params:any) => {
+                    return await this.appController.linkApplicationURLToVersion(parseInt(params.versionId, 10), parseInt(params.appURLId, 10))
                 }
             },
             Query: {
@@ -72,7 +75,11 @@ export default class GraphqlAPI {
                 },
                 allCookieTemplates: () => prisma.cookieTemplate.findMany(),
                 allCookieInstances: () => prisma.cookieInstance.findMany(),
-                allUnknowURLs: () => prisma.uRLInstance.findMany()
+                allUnknowURLs: () => prisma.application_URL.findMany({
+                    where : {
+                        applicationVersionId : null
+                    }
+                })
             },
             ApplicationVersion: {
                 report: async (appVersion: any, args: any) => {

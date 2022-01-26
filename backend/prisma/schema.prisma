@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -35,16 +32,17 @@ enum Application_URL_Type {
 }
 
 model Application_URL {
-  id                   Int                 @id @default(autoincrement())
-  url                  String              @unique
+  id                   Int                  @id @default(autoincrement())
+  url                  String               @unique
   type                 Application_URL_Type
-  applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
-  applicationVersionId Int
+  applicationVersion   Application_Version? @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
+  applicationVersionId Int?
+  created              DateTime             @db.Timestamptz(3)
 }
 
 model CookieTemplate {
   id                   Int                 @id @default(autoincrement())
-  nameRegex            String              
+  nameRegex            String
   domain               String?
   path                 String?
   httpOnly             Boolean?
@@ -53,8 +51,8 @@ model CookieTemplate {
   session              Boolean?
   applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
   applicationVersionId Int
-  @@unique([nameRegex, domain, applicationVersionId])
 
+  @@unique([nameRegex, domain, applicationVersionId])
 }
 
 model CookieInstance {
@@ -71,13 +69,6 @@ model CookieInstance {
   url                  String
   applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
   applicationVersionId Int
+
   @@unique([name, domain, applicationVersionId])
-
-}
-
-model URLInstance {
-  id                   Int                 @id @default(autoincrement())
-  url                  String
-  created              DateTime            @db.Timestamptz(3)
-  @@unique([url])
 }
