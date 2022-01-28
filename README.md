@@ -33,4 +33,16 @@ Les collecteurs sont des applications en charge de l'observation des trackers ex
 
 ### Collecteur Extension Chrome
 
-Depuis le gestionnaire d'extension de Chrome, activer le mode dev afin de pouvoir charger une extension "non empaquetée"
+L'extension Chrome permet d'observer le contenu d'onglets d'un navigateur dans le but de détécter la présence de traçeurs, produire un rapport et envoyer vers le serveur des rapports de détection.
+Depuis le gestionnaire d'extension de Chrome, activer le mode dev afin de pouvoir charger une extension "non empaquetée" et selectionner ensuite le répertoire :
+
+    /collectors/chrome-extension
+
+### Collecteur Agent JS
+
+L'agent JS permet de collecter des traçeurs dans un contexte où l'utilisation d'un extension de navigateur ne serait pas déployable.
+
+La mise en place de l'agent JS implique d'exposer le code source de cet agent sur un serveur http avec le même domaine que celui des applications à observer.
+
+
+
