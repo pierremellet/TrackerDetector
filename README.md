@@ -1,5 +1,4 @@
-![backend workflow](https://github.com/pierremellet/TrackerDetector/actions/workflows/node.js.yml/badge.svg)
-
+[![Node.js CI](https://github.com/pierremellet/TrackerDetector/actions/workflows/node.js.yml/badge.svg)](https://github.com/pierremellet/TrackerDetector/actions/workflows/node.js.yml)
 
 # Tracker Detector
 
