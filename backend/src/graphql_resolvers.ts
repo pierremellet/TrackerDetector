@@ -17,8 +17,17 @@ export default class GraphqlAPI {
 
         this.resolvers = {
             Mutation: {
+                createDomain: async (_: any, params: any): Promise<any> => {
+                    return await this.appController.createDomain(params.domainName);
+                },
+                updateDomain: async (_: any, params: any): Promise<any> => {
+                    return await this.appController.updateDomain(parseInt(params.domainId, 10), params.domainName, params.domainEnable);
+                },
+                createCookieCategory: async (_: any, params: any): Promise<any> => {
+                    return await this.appController.createCookieCategory(params.name);
+                },
                 convertCookieInstanceToTemplate: async (_: any, params: any): Promise<any> => {
-                    return await this.appController.convertCookieInstanceToTemplate(parseInt(params.versionId, 10), parseInt(params.cookieInstanceId, 10));
+                    return await this.appController.convertCookieInstanceToTemplate(parseInt(params.versionId, 10), parseInt(params.cookieCategoryId, 10), parseInt(params.cookieInstanceId, 10));
                 },
                 deleteCookieInstancesForVersion: async (_: any, params: any): Promise<any> => {
                     return await this.appController.deleteCookieInstancesForVersion(parseInt(params.versionId, 10));
@@ -43,25 +52,13 @@ export default class GraphqlAPI {
                 createApplication: async (_: any, params: any) => {
                     return await this.appController.createApplication(params.appName);
                 },
-                linkApplicationURLToVersion: async (_:any, params:any) => {
+                linkApplicationURLToVersion: async (_: any, params: any) => {
                     return await this.appController.linkApplicationURLToVersion(parseInt(params.versionId, 10), parseInt(params.appURLId, 10))
                 }
             },
             Query: {
                 configuration: async (obj: any, args: any, context: any, info: any) => {
-                    const urls = await this.prisma.application_Version.findMany({
-                        select: {
-                            urls: true
-                        },
-                        where: {
-                            enable: true
-                        }
-                    }).then(version => version.map(v => v.urls.map(u => extractHostname(u.url))))
-                    const flattendArray = urls.flat()
-                    const deduplicated = [...new Set(flattendArray)];
-                    return {
-                        "domains": deduplicated
-                    }
+                    return {};
                 },
                 allApplications: (obj: any, args: any, context: any, info: any) => {
                     return prisma.application.findMany();
@@ -76,10 +73,18 @@ export default class GraphqlAPI {
                 allCookieTemplates: () => prisma.cookieTemplate.findMany(),
                 allCookieInstances: () => prisma.cookieInstance.findMany(),
                 allUnknowURLs: () => prisma.application_URL.findMany({
-                    where : {
-                        applicationVersionId : null
+                    where: {
+                        applicationVersionId: null
                     }
                 })
+            },
+            Configuration: {
+                domains: async (appVersion: any, args: any) => {
+                    return this.prisma.domain.findMany();
+                },
+                cookieCategories: async (appVersion: any, args: any) => {
+                    return this.prisma.cookieCategory.findMany();
+                }
             },
             ApplicationVersion: {
                 report: async (appVersion: any, args: any) => {

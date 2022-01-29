@@ -40,6 +40,18 @@ model Application_URL {
   created              DateTime             @db.Timestamptz(3)
 }
 
+model CookieCategory {
+  id      Int              @id @default(autoincrement())
+  name    String           @unique
+  cookies CookieTemplate[]
+}
+
+model Domain {
+  id Int  @id @default(autoincrement())
+  name String @unique
+  enable Boolean
+}
+
 model CookieTemplate {
   id                   Int                 @id @default(autoincrement())
   nameRegex            String
@@ -51,6 +63,8 @@ model CookieTemplate {
   session              Boolean?
   applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
   applicationVersionId Int
+  category             CookieCategory      @relation(fields: [categoryId], references: [id])
+  categoryId           Int
 
   @@unique([nameRegex, domain, applicationVersionId])
 }

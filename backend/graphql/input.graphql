@@ -9,6 +9,7 @@ input CookieTemplateInput {
   secure: Boolean
   session: Boolean
   disabled: Boolean
+  category: Int 
 }
 input CookieInstanceInput {
   id: ID

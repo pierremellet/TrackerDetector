@@ -1,5 +1,15 @@
 type Configuration {
-  domains: [String!]!
+  domains: [Domain!]!
+  cookieCategories: [CookieCategory!]
+}
+type Domain {
+  id: ID
+  name: String
+  enable: Boolean
+}
+type CookieCategory{
+  id: ID
+  name: String
 }
 type Application {
   id: ID

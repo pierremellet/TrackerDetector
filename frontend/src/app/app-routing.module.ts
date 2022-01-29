@@ -5,6 +5,9 @@ import { ApplicationListComponent } from './application-list/application-list.co
 import { ApplicationversionComponent } from './reports/applicationversion/applicationversion.component';
 import { ReportsComponent } from './reports/reports.component';
 import { UnknowurlsComponent } from './reports/unknowurls/unknowurls.component';
+import { CookieCategoriesComponent } from './settings/cookie-categories/cookie-categories.component';
+import { DomainsComponent } from './settings/domains/domains.component';
+import { SettingsComponent } from './settings/settings.component';
 import { VersionEditComponent } from './version-edit/version-edit.component';
 
 const routes: Routes = [
@@ -15,12 +18,25 @@ const routes: Routes = [
     path: 'reports', component: ReportsComponent, children: [
       { path: '', redirectTo: 'applications', pathMatch: 'full' },
       {
-        path: 'applications', // child route path
-        component: ApplicationversionComponent, // child route component that the router renders
+        path: 'applications',
+        component: ApplicationversionComponent,
       },
       {
         path: 'unknowurls',
-        component: UnknowurlsComponent, // another child route component that the router renders
+        component: UnknowurlsComponent,
+      },
+    ],
+  },
+  {
+    path: 'settings', component: SettingsComponent, children: [
+      { path: '', redirectTo: 'cookies', pathMatch: 'full' },
+      {
+        path: 'cookies',
+        component: CookieCategoriesComponent,
+      },
+      {
+        path: 'domains',
+        component: DomainsComponent,
       },
     ],
   },

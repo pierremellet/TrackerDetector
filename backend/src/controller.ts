@@ -225,7 +225,7 @@ export class TrackerFinderController {
         return report;
     }
 
-    async convertCookieInstanceToTemplate(versionId: number, cookieInstanceId: number) {
+    async convertCookieInstanceToTemplate(versionId: number, categoryId: number, cookieInstanceId: number) {
         const cookieInstance = await this.prisma.cookieInstance.findUnique({
             where: {
                 id: cookieInstanceId
@@ -235,6 +235,11 @@ export class TrackerFinderController {
         if (cookieInstance) {
             return this.prisma.cookieTemplate.create({
                 data: {
+                    category: {
+                        connect: {
+                            id: categoryId
+                        }
+                    },
                     nameRegex: cookieInstance.name,
                     domain: cookieInstance.domain,
                     hostOnly: cookieInstance.hostOnly,
@@ -266,13 +271,13 @@ export class TrackerFinderController {
         });
     }
 
-    async linkApplicationURLToVersion(versionId:number, applicationURLId : number): Promise<Application_URL>{
+    async linkApplicationURLToVersion(versionId: number, applicationURLId: number): Promise<Application_URL> {
         return this.prisma.application_URL.update({
-            where : {
-                id : applicationURLId
+            where: {
+                id: applicationURLId
             },
-            data : {
-                applicationVersionId : versionId
+            data: {
+                applicationVersionId: versionId
             }
         })
     }
@@ -386,6 +391,46 @@ export class TrackerFinderController {
             include: {
                 versions: true
             }
+        });
+    }
+
+    createCookieCategory(name: string) {
+        if (name === undefined || name.length === 0) {
+            throw new Error('name can\'t be null');
+        }
+        return this.prisma.cookieCategory.create({
+            data: {
+                name
+            }
+        })
+    }
+
+    createDomain(domainName: string) {
+        if (domainName === undefined || domainName.length === 0) {
+            throw new Error('domainName can\'t be null');
+        }
+        return this.prisma.domain.create({
+            data: {
+                name: domainName,
+                enable: true
+            }
+        })
+    }
+
+
+    updateDomain(domaineId: number, domainName: string, domainEnable: boolean) {
+        const data: any = {};
+        if (domainName !== undefined) {
+            data.name = domainName;
+        }
+        if (domainEnable !== undefined) {
+            data.enable = domainEnable;
+        }
+        return this.prisma.domain.update({
+            where: {
+                id: domaineId
+            },
+            data
         });
     }
 

@@ -15,6 +15,9 @@ import { ReportsComponent } from './reports/reports.component';
 import { ToastComponent } from './toast/toast.component';
 import { UnknowurlsComponent } from './reports/unknowurls/unknowurls.component';
 import { ApplicationversionComponent } from './reports/applicationversion/applicationversion.component';
+import { SettingsComponent } from './settings/settings.component';
+import { CookieCategoriesComponent } from './settings/cookie-categories/cookie-categories.component';
+import { DomainsComponent } from './settings/domains/domains.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +31,10 @@ import { ApplicationversionComponent } from './reports/applicationversion/applic
     ReportsComponent,
     ToastComponent,
     UnknowurlsComponent,
-    ApplicationversionComponent
+    ApplicationversionComponent,
+    SettingsComponent,
+    CookieCategoriesComponent,
+    DomainsComponent
   ],
   imports: [
     AppRoutingModule,

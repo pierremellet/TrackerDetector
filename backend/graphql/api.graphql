@@ -11,10 +11,14 @@ type Mutation {
   createPartialReport(input: PartialReport): String
   createApplication(appName: String): Application
   createApplicationVersion(appId: ID, versionName: String): ApplicationVersion
+  createCookieCategory(name: String!): CookieCategory
+  createDomain(domainName: String!): Domain
+  updateDomain(domainId: ID!, domainName: String, domainEnable: Boolean): Domain
   updateApplication(appId: ID, appName: String): Application
   updateApplicationVersion(version: ApplicationVersionInput): ApplicationVersion
   convertCookieInstanceToTemplate(
     versionId: ID
+    CookieCategoryId: ID
     cookieInstanceId: ID
   ): CookieTemplate
   deleteApplication(appId: ID): Application
