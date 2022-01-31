@@ -1,4 +1,4 @@
-import { Application, Application_URL, Application_URL_Type, Application_Version, CookieInstance, CookieTemplate, Prisma, prisma, PrismaClient } from "@prisma/client";
+import { Application, Application_URL, Application_URL_Type, Application_Version, CookieCategory, CookieInstance, CookieTemplate, Prisma, prisma, PrismaClient } from "@prisma/client";
 import { bufferTime, concatMap, groupBy, interval, map, mergeAll, mergeMap, Observable, of, reduce, Subject, tap, windowCount, windowTime } from "rxjs";
 import rootLogger from "./logger"
 import { AppConfig } from "./utils";
@@ -6,6 +6,7 @@ import { PartialReport, TrackedCookie } from "./model";
 import topics from './topics';
 
 export class TrackerFinderController {
+
 
     private _log = rootLogger(this.config).getChildLogger({ name: "TrackerFinderController" });
 
@@ -432,6 +433,26 @@ export class TrackerFinderController {
             },
             data
         });
+    }
+
+
+    public async updateCookieCategory(cookieCategoryId: number, cookieCategoryName: any, cookieCategoryEnable: any): Promise<CookieCategory> {
+        const data: any = {};
+        if (cookieCategoryName !== undefined) {
+            data.name = cookieCategoryName;
+        }
+        if (cookieCategoryEnable !== undefined) {
+            data.enable = cookieCategoryEnable;
+        }   
+        const cookie = await this.prisma.cookieCategory.update({
+            where : {
+                id : cookieCategoryId
+            }, 
+            data
+        });
+
+        return cookie;
+    
     }
 
 }

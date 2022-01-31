@@ -9,19 +9,27 @@ type Query {
 type Mutation {
   # Allow report creation
   createPartialReport(input: PartialReport): String
+
   createApplication(appName: String): Application
+  updateApplication(appId: ID, appName: String): Application
+  deleteApplication(appId: ID): Application
+
   createApplicationVersion(appId: ID, versionName: String): ApplicationVersion
+  updateApplicationVersion(version: ApplicationVersionInput): ApplicationVersion
+
   createCookieCategory(name: String!): CookieCategory
+  updateCookieCategory(cookieCategoryId: ID!, cookieCategoryName: String, cookieCategoryEnable: Boolean): CookieCategory
+
   createDomain(domainName: String!): Domain
   updateDomain(domainId: ID!, domainName: String, domainEnable: Boolean): Domain
-  updateApplication(appId: ID, appName: String): Application
-  updateApplicationVersion(version: ApplicationVersionInput): ApplicationVersion
+
+  
   convertCookieInstanceToTemplate(
     versionId: ID
     CookieCategoryId: ID
     cookieInstanceId: ID
   ): CookieTemplate
-  deleteApplication(appId: ID): Application
+
   deleteCookieInstancesForVersion(versionId: ID): Int
   linkApplicationURLToVersion(versionId: ID, appURLId: ID): ApplicationURL
 }

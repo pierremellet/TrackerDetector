@@ -26,6 +26,9 @@ export default class GraphqlAPI {
                 createCookieCategory: async (_: any, params: any): Promise<any> => {
                     return await this.appController.createCookieCategory(params.name);
                 },
+                updateCookieCategory: async (_: any, params: any): Promise<any> => {
+                    return await this.appController.updateCookieCategory(parseInt(params.cookieCategoryId, 10), params.cookieCategoryName, params.cookieCategoryEnable);
+                },
                 convertCookieInstanceToTemplate: async (_: any, params: any): Promise<any> => {
                     return await this.appController.convertCookieInstanceToTemplate(parseInt(params.versionId, 10), parseInt(params.cookieCategoryId, 10), parseInt(params.cookieInstanceId, 10));
                 },
@@ -80,10 +83,18 @@ export default class GraphqlAPI {
             },
             Configuration: {
                 domains: async (appVersion: any, args: any) => {
-                    return this.prisma.domain.findMany();
+                    return this.prisma.domain.findMany({
+                        orderBy : {
+                            name : "asc"
+                        }
+                    });
                 },
                 cookieCategories: async (appVersion: any, args: any) => {
-                    return this.prisma.cookieCategory.findMany();
+                    return this.prisma.cookieCategory.findMany({
+                        orderBy: {
+                            name : "asc"
+                        }
+                    });
                 }
             },
             ApplicationVersion: {

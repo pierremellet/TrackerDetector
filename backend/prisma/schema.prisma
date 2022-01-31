@@ -37,6 +37,8 @@ model Application_URL {
   type                 Application_URL_Type
   applicationVersion   Application_Version? @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
   applicationVersionId Int?
+  domain               Domain? @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  domainId             Int?
   created              DateTime             @db.Timestamptz(3)
 }
 
@@ -44,12 +46,14 @@ model CookieCategory {
   id      Int              @id @default(autoincrement())
   name    String           @unique
   cookies CookieTemplate[]
+  enable Boolean
 }
 
 model Domain {
   id Int  @id @default(autoincrement())
   name String @unique
   enable Boolean
+  applicationURLs Application_URL[]
 }
 
 model CookieTemplate {

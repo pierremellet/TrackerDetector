@@ -10,6 +10,7 @@ type Domain {
 type CookieCategory{
   id: ID
   name: String
+  enable: Boolean
 }
 type Application {
   id: ID
@@ -28,7 +29,8 @@ scalar Date
 
 type ApplicationURL {
   id: ID
-  url: String
+  domain: Domain
+  path: String
   type: ApplicationURLType
   created: Date
 }
