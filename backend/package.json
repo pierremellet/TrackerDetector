@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "build": "npx prisma generate && tsc --project ./",
-    "start:dev": "nodemon src/server.ts",
+    "start:dev": "npx nodemon src/server.ts",
     "start:prod": "node dist/server.js",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'"

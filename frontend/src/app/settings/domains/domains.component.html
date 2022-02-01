@@ -1,1 +1,24 @@
-<p>domains works!</p>
+<ul class="list-group">
+    <li *ngFor="let dom of domains" class="list-group-item">
+        <div class="row">
+            <div class="col-md-8">
+                <input class=" form-control" [(ngModel)]="dom.name" />
+            </div>
+            <div class="col-md-4">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button (click)="saveDomain(dom)" class="btn btn-success me-md-2" type="button"><i
+                            class="bi bi-save"></i> Update</button>
+                    <button (click)="toggleDomainState(dom)" class="btn " type="button" [class.btn-default]="!dom.enable" [class.btn-primary]="dom.enable"><i class="bi"
+                            [class.bi-toggle-off]="!dom.enable"  [class.bi-toggle-on]="dom.enable"></i> Enable</button>
+                </div>
+            </div>
+        </div>
+    </li>
+</ul>
+
+
+<div class="input-group mb-3 mt-3">
+    <input type="text" class="form-control" placeholder="Domain name ..." [(ngModel)]="newDomainName">
+    <button class="btn btn-outline-secondary" type="button" id="button-addon2" (click)="createDomain()">Create
+        Domain</button>
+</div>
