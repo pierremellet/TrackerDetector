@@ -1,23 +1,25 @@
-import { Application, Application_URL, Application_URL_Type, Application_Version, CookieCategory, CookieInstance, CookieTemplate, Prisma, prisma, PrismaClient } from "@prisma/client";
-import { bufferTime, concatMap, groupBy, interval, map, mergeAll, mergeMap, Observable, of, reduce, Subject, tap, windowCount, windowTime } from "rxjs";
-import rootLogger from "./logger"
+import { Application, Application_URL, Application_Version, CookieCategory, CookieTemplate, Domain, PrismaClient } from "@prisma/client";
+import { bufferTime, concatMap, filter, groupBy, map, mergeAll, mergeMap, Observable, of, tap, windowCount, } from "rxjs";
+import rootLogger from "./logger";
 import { AppConfig } from "./utils";
 import { PartialReport, TrackedCookie } from "./model";
-import topics from './topics';
+import topics from "./topics";
 
 export class TrackerFinderController {
+    private _log = rootLogger(this.config).getChildLogger({
+        name: "TrackerFinderController",
+    });
 
-
-    private _log = rootLogger(this.config).getChildLogger({ name: "TrackerFinderController" });
-
-    public _URLPrefixIndex: (Application_URL & { applicationVersion: Application_Version | null; })[] = [];
+    public _URLPrefixIndex: (Application_URL & {
+        applicationVersion: Application_Version | null;
+        domain: Domain;
+    })[] = [];
 
     constructor(private config: AppConfig, private prisma: PrismaClient) {
-
         // Index version URL prefix
         this.updateURLIndexOnApplicationVersionUpdate();
 
-        // Process incomming partial report in order to group and aggregate reports by URL 
+        // Process incomming partial report in order to group and aggregate reports by URL
         this.handleIncommingReports(config);
 
         // Process sanitized reports to find if report match with a version
@@ -26,44 +28,24 @@ export class TrackerFinderController {
         // Process cookie doesn't match any application requirement
         this.handleDriftCookies();
 
-
         this.handleUnknowURL();
     }
-
 
     private handleUnknowURL() {
         topics.unknowURLSubject
             .pipe(
-                bufferTime(1000)
+                bufferTime(1000),
+                filter((urls) => urls.length > 0)
             )
-            .subscribe(async urls => {
-                if (urls && urls.length > 0) {
-                    this._log.debug(`${urls.length} unknow urls to save`);
-                    const data = urls.map(u => {
-                        return {
-                            url: u,
-                            type: Application_URL_Type.EXACT,
-                            created: new Date()
-                        }
-                    }).forEach(async d => {
-                        try {
-                            const res = await this.prisma.application_URL.create({
-                                data: d
-                            })
-                            this._log.debug(`Save unknow URLs id(${res.id})`);
-                        } catch (err) {
-                            //this._log.debug(err);
-                        }
-                    })
-
-                }
+            .subscribe(async (urls) => {
+                this._log.debug(`Incomming ${urls.length} unknow urls`);
             });
     }
 
     private handleDriftCookies() {
-        topics.driftCookiesSubject
-            .subscribe(drift => {
-                this.prisma.cookieInstance.create({
+        topics.driftCookiesSubject.subscribe((drift) => {
+            this.prisma.cookieInstance
+                .create({
                     data: {
                         domain: drift.cookie.domain,
                         hostOnly: drift.cookie.hostOnly,
@@ -72,106 +54,122 @@ export class TrackerFinderController {
                         path: drift.cookie.path,
                         secure: drift.cookie.secure,
                         session: drift.cookie.session,
-                        timestamp: (new Date()).getTime(),
+                        timestamp: new Date().getTime(),
                         url: drift.url,
                         applicationVersion: {
                             connect: {
-                                id: drift.versionId
-                            }
-                        }
-                    }
-                }).then(cookie => {
-                    this._log.info(`Save drift Cookie for version id(${drift.versionId}), with id(${cookie.id}) and name(${cookie.name})`);
+                                id: drift.versionId,
+                            },
+                        },
+                    },
+                })
+                .then((cookie) => {
+                    this._log.info(
+                        `Save drift Cookie for version id(${drift.versionId}), with id(${cookie.id}) and name(${cookie.name})`
+                    );
                 });
-            });
+        });
     }
 
     private handleIncommingSanitizedReports() {
-        topics.sanitizedPartialReportSubject.pipe(
-            map(async (report) => {
+        topics.sanitizedPartialReportSubject
+            .pipe(
+                map(async (report) => {
+                    var matchVersionIds = this._URLPrefixIndex
+                        .filter((u) => u.applicationVersionId !== null)
+                        .filter((u) => {
+                            const matchURL = `https://${u.domain.name}${u.path}`;
+                            if (u.type === "PREFIX") {
+                                return report.url.startsWith(matchURL);
+                            }
+                            if (u.type === "EXACT") {
+                                return report.url === matchURL;
+                            }
+                            return false;
+                        })
+                        .map((v) => v.applicationVersionId as number);
 
-                var matchVersionIds = this._URLPrefixIndex
-                    .filter(u => u.applicationVersionId !== null)
-                    .filter(u => {
-                        if (u.type === "PREFIX") {
-                            return report.url.startsWith(u.url);
-                        }
-                        if (u.type === "EXACT") {
-                            return report.url === u.url;
-                        }
-                        return false;
-                    }).map(v => v.applicationVersionId as number);
+                    // Expand matchVersionIds with data from db
+                    const matchVersions = await this.prisma.application_Version.findMany({
+                        where: {
+                            id: {
+                                in: matchVersionIds,
+                            },
+                        },
+                        include: {
+                            cookieTemplates: true,
+                            application: true,
+                        },
+                    });
 
-                // Expand matchVersionIds with data from db
-                const matchVersions = await this.prisma.application_Version.findMany({
-                    where: {
-                        id: {
-                            in: matchVersionIds
-                        }
-                    },
-                    include: {
-                        cookieTemplates: true,
-                        application: true
-                    }
-                });
-
-                const reportAndVersions: {
-                    versions: (Application_Version & {
-                        cookieTemplates: CookieTemplate[];
-                        application: Application;
-                    })[];
-                    report: PartialReport;
-                } = {
-                    'versions': matchVersions,
-                    'report': report
-                };
-                return reportAndVersions;
-            }),
-            concatMap(report => report)
-        ).subscribe(async (reportAndVersion) => {
-            const versions = reportAndVersion.versions;
-            if (!versions || versions.length == 0) {
-                this._log.error(`No version found for report URL ${reportAndVersion.report.url}`);
-                topics.unknowURLSubject.next(reportAndVersion.report.url);
-            } else {
-                versions.forEach(version => {
-                    reportAndVersion.report.cookies.forEach(cookieInstance => {
-                        var match = false;
-                        version.cookieTemplates.forEach((cookieTemplate: CookieTemplate) => {
-                            const regex = new RegExp(cookieTemplate.nameRegex);
-                            if (cookieInstance.name.match(regex)) {
-                                match = true;
+                    const reportAndVersions: {
+                        versions: (Application_Version & {
+                            cookieTemplates: CookieTemplate[];
+                            application: Application;
+                        })[];
+                        report: PartialReport;
+                    } = {
+                        versions: matchVersions,
+                        report: report,
+                    };
+                    return reportAndVersions;
+                }),
+                concatMap((report) => report)
+            )
+            .subscribe(async (reportAndVersion) => {
+                const versions = reportAndVersion.versions;
+                if (!versions || versions.length == 0) {
+                    this._log.error(
+                        `No version found for report URL ${reportAndVersion.report.url}`
+                    );
+                    topics.unknowURLSubject.next(reportAndVersion.report.url);
+                } else {
+                    versions.forEach((version) => {
+                        reportAndVersion.report.cookies.forEach((cookieInstance) => {
+                            var match = false;
+                            version.cookieTemplates.forEach(
+                                (cookieTemplate: CookieTemplate) => {
+                                    const regex = new RegExp(cookieTemplate.nameRegex);
+                                    if (cookieInstance.name.match(regex)) {
+                                        match = true;
+                                    }
+                                }
+                            );
+                            if (!match) {
+                                topics.driftCookiesSubject.next({
+                                    appId: version.application.id,
+                                    versionId: version.id,
+                                    url: reportAndVersion.report.url,
+                                    cookie: cookieInstance,
+                                });
                             }
                         });
-                        if (!match) {
-                            topics.driftCookiesSubject.next({
-                                appId: version.application.id,
-                                versionId: version.id,
-                                url: reportAndVersion.report.url,
-                                cookie: cookieInstance
-                            });
-                        }
                     });
-                });
-            }
-        });
+                }
+            });
     }
 
     private handleIncommingReports(config: AppConfig) {
-        topics.rawPartialReportSubject.pipe(
-            tap(report => this._log.debug(`Partial report received for URL : ${report.url}`)),
-            map(report => this.removeURLParams(report)),
-            windowCount(config.input_buffer),
-            map(win => win.pipe(
-                groupBy(report => report.url),
-                mergeMap(group => {
-                    return of(new PartialReport(group.key, this.dedupCookies(group)));
-                })
-            )),
-            mergeAll()
-        ).subscribe(sanitizedReport => {
-            topics.sanitizedPartialReportSubject.next(sanitizedReport);
-        });
+        topics.rawPartialReportSubject
+            .pipe(
+                tap((report) =>
+                    this._log.debug(`Partial report received for URL : ${report.url}`)
+                ),
+                map((report) => this.removeURLParams(report)),
+                windowCount(config.input_buffer),
+                map((win) =>
+                    win.pipe(
+                        groupBy((report) => report.url),
+                        mergeMap((group) => {
+                            return of(new PartialReport(group.key, this.dedupCookies(group)));
+                        })
+                    )
+                ),
+                mergeAll()
+            )
+            .subscribe((sanitizedReport) => {
+                topics.sanitizedPartialReportSubject.next(sanitizedReport);
+            });
     }
 
     private updateURLIndexOnApplicationVersionUpdate() {
@@ -181,12 +179,13 @@ export class TrackerFinderController {
             const urls = await this.prisma.application_URL.findMany({
                 where: {
                     applicationVersion: {
-                        isNot: null
-                    }
+                        isNot: null,
+                    },
                 },
                 include: {
-                    applicationVersion: true
-                }
+                    applicationVersion: true,
+                    domain: true,
+                },
             });
 
             this._URLPrefixIndex = urls;
@@ -195,21 +194,22 @@ export class TrackerFinderController {
     }
 
     public deleteCookieInstancesForVersion(versionID: number): Promise<number> {
-        return this.prisma.cookieInstance.deleteMany({
-            where: {
-                applicationVersion: {
-                    id: versionID
-                }
-            }
-        }).then(res => res.count);
+        return this.prisma.cookieInstance
+            .deleteMany({
+                where: {
+                    applicationVersion: {
+                        id: versionID,
+                    },
+                },
+            })
+            .then((res) => res.count);
     }
-
 
     private dedupCookies(group: Observable<PartialReport>): TrackedCookie[] {
         const cookies: TrackedCookie[] = [];
-        group.forEach(report => {
-            report.cookies.forEach(cookie => {
-                if (cookies.findIndex(c => c.name === cookie.name) === -1) {
+        group.forEach((report) => {
+            report.cookies.forEach((cookie) => {
+                if (cookies.findIndex((c) => c.name === cookie.name) === -1) {
                     cookies.push(cookie);
                 }
             });
@@ -217,29 +217,32 @@ export class TrackerFinderController {
         return cookies;
     }
 
-
     private removeURLParams(report: PartialReport): PartialReport {
-        const paramStartPost = report.url.indexOf('?');
+        const paramStartPost = report.url.indexOf("?");
         if (paramStartPost !== -1) {
             report.url = report.url.substring(0, paramStartPost);
         }
         return report;
     }
 
-    async convertCookieInstanceToTemplate(versionId: number, categoryId: number, cookieInstanceId: number) {
+    async convertCookieInstanceToTemplate(
+        versionId: number,
+        categoryId: number,
+        cookieInstanceId: number
+    ) {
         const cookieInstance = await this.prisma.cookieInstance.findUnique({
             where: {
-                id: cookieInstanceId
-            }
-        })
+                id: cookieInstanceId,
+            },
+        });
 
         if (cookieInstance) {
             return this.prisma.cookieTemplate.create({
                 data: {
                     category: {
                         connect: {
-                            id: categoryId
-                        }
+                            id: categoryId,
+                        },
                     },
                     nameRegex: cookieInstance.name,
                     domain: cookieInstance.domain,
@@ -250,11 +253,11 @@ export class TrackerFinderController {
                     session: cookieInstance.session,
                     applicationVersion: {
                         connect: {
-                            id: versionId
-                        }
-                    }
-                }
-            })
+                            id: versionId,
+                        },
+                    },
+                },
+            });
         }
         return null;
     }
@@ -265,72 +268,80 @@ export class TrackerFinderController {
                 name: versionName,
                 application: {
                     connect: {
-                        id: appId
-                    }
-                }
-            }
+                        id: appId,
+                    },
+                },
+            },
         });
     }
 
     async linkApplicationURLToVersion(versionId: number, applicationURLId: number): Promise<Application_URL> {
         return this.prisma.application_URL.update({
             where: {
-                id: applicationURLId
+                id: applicationURLId,
             },
             data: {
-                applicationVersionId: versionId
-            }
-        })
+                applicationVersionId: versionId,
+            },
+        });
     }
 
     async updateApplicationVersion(version: any): Promise<Application_Version> {
-        const urlsData = version.urls.filter((u: any) => !u.disabled).map((u: any) => {
-            return {
-                where: {
-                    id: parseInt(u.id, 10) || 0
-                },
-                create: {
-                    url: u.url,
-                    type: u.type,
-                    created: new Date()
-                },
-                update: {
-                    url: u.url,
-                    type: u.type
-                }
-            }
-        });
+        const urlsData = version.urls
+            .filter((u: any) => !u.disabled)
+            .map((u: any) => {
+                return {
+                    where: {
+                        id: parseInt(u.id, 10) || 0,
+                    },
+                    create: {
+                        url: u.url,
+                        type: u.type,
+                        created: new Date(),
+                    },
+                    update: {
+                        url: u.url,
+                        type: u.type,
+                    },
+                };
+            });
 
-        const urlsToDelete = version.urls.filter((u: any) => u.disabled).map((u: any) => {
-            return {
-                id: parseInt(u.id, 10)
-            }
-        });
+        const urlsToDelete = version.urls
+            .filter((u: any) => u.disabled)
+            .map((u: any) => {
+                return {
+                    id: parseInt(u.id, 10),
+                };
+            });
 
-        const cookiesData = version.cookies.filter((u: any) => !u.disabled).map((u: any) => {
-            const data = {
-                nameRegex: u.nameRegex,
-                httpOnly: u.httpOnly,
-                domain: u.domain,
-                path: u.path,
-                hostOnly: u.hostOnly,
-                secure: u.secure,
-                session: u.session
-            };
-            return {
-                where: {
-                    id: parseInt(u.id, 10) || 0
-                },
-                create: data,
-                update: data
-            }
-        });
+        const cookiesData = version.cookies
+            .filter((u: any) => !u.disabled)
+            .map((u: any) => {
+                const data = {
+                    nameRegex: u.nameRegex,
+                    httpOnly: u.httpOnly,
+                    domain: u.domain,
+                    path: u.path,
+                    hostOnly: u.hostOnly,
+                    secure: u.secure,
+                    session: u.session,
+                };
+                return {
+                    where: {
+                        id: parseInt(u.id, 10) || 0,
+                    },
+                    create: data,
+                    update: data,
+                };
+            });
 
-        const cookiesToDelete = version.cookies.filter((u: any) => u.disabled).map((u: any) => {
-            return {
-                id: parseInt(u.id, 10)
-            }
-        });
+        const cookiesToDelete = version.cookies
+            .filter((u: any) => u.disabled)
+            .map((u: any) => {
+                return {
+                    id: parseInt(u.id, 10),
+                };
+            });
 
         return this.prisma.application_Version.update({
             data: {
@@ -338,48 +349,48 @@ export class TrackerFinderController {
                 enable: version.enable,
                 urls: {
                     upsert: urlsData,
-                    deleteMany: urlsToDelete
+                    deleteMany: urlsToDelete,
                 },
                 cookieTemplates: {
                     upsert: cookiesData,
-                    deleteMany: cookiesToDelete
-                }
+                    deleteMany: cookiesToDelete,
+                },
             },
             where: {
-                id: version.id
-            }
+                id: version.id,
+            },
         });
     }
 
     async createApplication(appName: string): Promise<Application> {
         return this.prisma.application.create({
             data: {
-                name: appName
-            }
-        })
+                name: appName,
+            },
+        });
     }
 
     async deleteApplication(appId: number): Promise<Application> {
         await this.prisma.application_Version.deleteMany({
             where: {
-                applicationId: appId
-            }
+                applicationId: appId,
+            },
         });
         return this.prisma.application.delete({
             where: {
-                id: appId
-            }
-        })
-    };
+                id: appId,
+            },
+        });
+    }
 
     async updateApplication(appId: number, name: string): Promise<Application> {
         return this.prisma.application.update({
             where: {
-                id: appId
+                id: appId,
             },
             data: {
-                name: name
-            }
+                name: name,
+            },
         });
     }
 
@@ -387,39 +398,39 @@ export class TrackerFinderController {
         this._log.debug(`Get application ${id}`);
         return this.prisma.application.findUnique({
             where: {
-                'id': id
+                id: id,
             },
             include: {
-                versions: true
-            }
+                versions: true,
+            },
         });
     }
 
     createCookieCategory(name: string) {
         if (name === undefined || name.length === 0) {
-            throw new Error('name can\'t be null');
+            throw new Error("name can't be null");
         }
         return this.prisma.cookieCategory.create({
             data: {
-                name
-            }
-        })
+                name,
+                enable: true
+            },
+        });
     }
 
     createDomain(domainName: string) {
         if (domainName === undefined || domainName.length === 0) {
-            throw new Error('domainName can\'t be null');
+            throw new Error("domainName can't be null");
         }
         return this.prisma.domain.create({
             data: {
                 name: domainName,
-                enable: true
-            }
-        })
+                enable: true,
+            },
+        });
     }
 
-
-    updateDomain(domaineId: number, domainName: string, domainEnable: boolean) {
+    public updateDomain(domaineId: number, domainName: string, domainEnable: boolean) {
         const data: any = {};
         if (domainName !== undefined) {
             data.name = domainName;
@@ -429,33 +440,27 @@ export class TrackerFinderController {
         }
         return this.prisma.domain.update({
             where: {
-                id: domaineId
+                id: domaineId,
             },
-            data
+            data,
         });
     }
 
-
-    public async updateCookieCategory(cookieCategoryId: number, cookieCategoryName: any, cookieCategoryEnable: any): Promise<CookieCategory> {
+    public async updateCookieCategory(cookieCategoryId: number, cookieCategoryName: string, cookieCategoryEnable: string): Promise<CookieCategory> {
         const data: any = {};
         if (cookieCategoryName !== undefined) {
             data.name = cookieCategoryName;
         }
         if (cookieCategoryEnable !== undefined) {
             data.enable = cookieCategoryEnable;
-        }   
+        }
         const cookie = await this.prisma.cookieCategory.update({
-            where : {
-                id : cookieCategoryId
-            }, 
-            data
+            where: {
+                id: cookieCategoryId,
+            },
+            data,
         });
 
         return cookie;
-    
     }
-
 }
-
-
-

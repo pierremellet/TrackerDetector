@@ -33,13 +33,15 @@ enum Application_URL_Type {
 
 model Application_URL {
   id                   Int                  @id @default(autoincrement())
-  url                  String               @unique
+  path                 String               
   type                 Application_URL_Type
   applicationVersion   Application_Version? @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
   applicationVersionId Int?
-  domain               Domain? @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  domainId             Int?
+  domain               Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  domainId             Int
   created              DateTime             @db.Timestamptz(3)
+  
+  @@unique([path, domainId, applicationVersionId])
 }
 
 model CookieCategory {
