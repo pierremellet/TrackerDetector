@@ -12,7 +12,7 @@ input CookieTemplateInput {
   category: Int 
 }
 input CookieInstanceInput {
-  id: ID
+  id: ID!
   name: String
   domain: String
   path: String
@@ -23,13 +23,14 @@ input CookieInstanceInput {
   timetamp: Int
 }
 input URLInput {
-  id: Int
-  url: String
+  id: ID
+  path: String
+  domainId: Int
   type: String
   disabled: Boolean
 }
 input ApplicationVersionInput {
-  id: Int
+  id: ID
   name: String
   enable: Boolean
   urls: [URLInput!]!

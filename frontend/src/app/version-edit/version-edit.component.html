@@ -37,20 +37,34 @@
                             No URL, click '+' to add one
                         </div>
                         <div class="row mb-3" *ngIf="version.urls.length > 0">
-                            <div class="form-group col-md-9">
-                                URL
+                            <div class="form-group col-md-1">
+
+                            </div>
+                            <div class="form-group col-md-4">
+                                Domain
+                            </div>
+                            <div class="form-group col-md-3">
+                                Path
                             </div>
                             <div class="form-group col-md-2">
                                 Type
                             </div>
                             <div class="form-group col-md-1">
-                                
+
                             </div>
                         </div>
                         <div class="row mb-3" *ngFor="let url of version.urls" [class.d-none]="url.disabled">
+                            <div class="col-md-1">
+                                https://
+                            </div>
+                            <div class="col-md-4">
+                                <select [(ngModel)]="url.domain.id" class="form-select">
+                                    <option [value]="dom.id" *ngFor="let dom of domains">{{dom.name}}</option> 
+                                </select>
+                            </div>
 
-                            <div class="col-md-9">
-                                <input [(ngModel)]="url.url" type="text" class="form-control" id="versionName">
+                            <div class="col-md-4">
+                                <input [(ngModel)]="url.path" type="text" class="form-control" id="versionName">
                             </div>
 
                             <div class="col-md-2">
@@ -61,7 +75,8 @@
                             </div>
 
                             <div class="col-md-1">
-                                <button class="btn btn-secondary" (click)="remove(url)"><i class="bi bi-trash"></i></button>
+                                <button class="btn btn-secondary" (click)="remove(url)"><i
+                                        class="bi bi-trash"></i></button>
                             </div>
 
                         </div>
@@ -144,7 +159,8 @@
                             </div>
 
                             <div class="col-md-1">
-                                <button class="btn btn-secondary" (click)="remove(cookie)"><i class="bi bi-trash"></i></button>
+                                <button class="btn btn-secondary" (click)="remove(cookie)"><i
+                                        class="bi bi-trash"></i></button>
                             </div>
 
                         </div>

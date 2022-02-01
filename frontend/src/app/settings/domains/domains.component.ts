@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { map } from 'rxjs';
 import { GraphQLService } from 'src/app/graph-ql.service';
+import { Domain } from 'src/app/model';
 
 @Component({
   selector: 'app-domains',
@@ -64,8 +65,3 @@ export class DomainsComponent implements OnInit {
 
 }
 
-type Domain = {
-  id: number,
-  name: number,
-  enable: boolean
-}

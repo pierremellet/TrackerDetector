@@ -115,6 +115,13 @@ export default class GraphqlAPI {
                         applicationVersion: {
                             id: appVersion.id
                         }
+                    },
+                    select:{
+                        domain:true,
+                        id:true,
+                        path: true,
+                        type: true,
+                        created: true
                     }
                 }),
                 cookies: (appVersion: any) => prisma.cookieTemplate.findMany({

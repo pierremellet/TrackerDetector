@@ -287,6 +287,8 @@ export class TrackerFinderController {
     }
 
     async updateApplicationVersion(version: any): Promise<Application_Version> {
+     
+
         const urlsData = version.urls
             .filter((u: any) => !u.disabled)
             .map((u: any) => {
@@ -295,12 +297,14 @@ export class TrackerFinderController {
                         id: parseInt(u.id, 10) || 0,
                     },
                     create: {
-                        url: u.url,
+                        path: u.path,
                         type: u.type,
+                        domainId: u.domainId,
                         created: new Date(),
                     },
                     update: {
-                        url: u.url,
+                        path: u.path,
+                        domainId: u.domainId,
                         type: u.type,
                     },
                 };
@@ -357,7 +361,7 @@ export class TrackerFinderController {
                 },
             },
             where: {
-                id: version.id,
+                id: parseInt(version.id,10),
             },
         });
     }

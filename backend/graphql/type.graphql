@@ -29,9 +29,9 @@ scalar Date
 
 type ApplicationURL {
   id: ID
-  domain: Domain
-  path: String
-  type: ApplicationURLType
+  domain: Domain!
+  path: String!
+  type: ApplicationURLType!
   created: Date
 }
 type ApplicationVersion {

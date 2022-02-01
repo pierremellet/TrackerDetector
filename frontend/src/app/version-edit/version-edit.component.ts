@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { GraphQLService } from '../graph-ql.service';
+import { Domain } from '../model';
 import { ToastService } from '../toast.service';
 
 @Component({
@@ -17,14 +18,18 @@ export class VersionEditComponent implements OnInit {
   version: any;
   applicationName: any;
   loading = false;
+  domains: Domain[] = [];
 
 
-  constructor(private route: ActivatedRoute, private gql: GraphQLService, private toast : ToastService) { }
+  constructor(private route: ActivatedRoute, private gql: GraphQLService, private toast: ToastService) { }
 
   addURL() {
     this.version.urls.push({
       id: undefined,
-      name: ""
+      domain: {
+        id: undefined
+      },
+      path: "/"
     })
   }
 
@@ -50,6 +55,12 @@ export class VersionEditComponent implements OnInit {
 
     const query = `
     {
+      configuration {
+        domains {
+          id
+          name
+        }
+      }
       findApplication(id: ${this.appId}){
         id
         name
@@ -59,7 +70,11 @@ export class VersionEditComponent implements OnInit {
           enable
           urls{
             id
-            url
+            path
+            domain{
+              id
+              name
+            }
             type
           }
           cookies{
@@ -77,10 +92,11 @@ export class VersionEditComponent implements OnInit {
     }
     `
     this.gql.sendQuery(query)
-      .pipe(map(r => r.data.findApplication))
+      .pipe(map(r => r.data))
       .subscribe(data => {
-        this.applicationName = data.name;
-        this.version = data.versions[0];
+        this.applicationName = data.findApplication.name;
+        this.version = data.findApplication.versions[0];
+        this.domains = data.configuration.domains;
       })
 
   }
@@ -88,7 +104,7 @@ export class VersionEditComponent implements OnInit {
 
   save() {
     this.loading = true;
-    
+
     const urlsString = this.version.urls.map((url: any) => {
       var idStr = "";
       if (url.id) {
@@ -96,7 +112,8 @@ export class VersionEditComponent implements OnInit {
       }
       return `{
           ${idStr}
-          url:"${url.url}"
+          path:"${url.path}"
+          domainId: ${url.domain.id}
           type:"${url.type}"
           disabled: ${url.disabled || false}
         }`
@@ -134,7 +151,11 @@ export class VersionEditComponent implements OnInit {
         enable
         urls{
           id
-          url
+          path
+          domain{
+            id
+            name
+          }
           type
         }
         cookies{
@@ -149,7 +170,7 @@ export class VersionEditComponent implements OnInit {
         }
       }
     }
-    ` 
+    `
 
     this.gql.sendQuery(query)
       .pipe(
