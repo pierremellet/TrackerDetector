@@ -1,4 +1,24 @@
 <ul class="list-group">
-    <li class="list-group-item" *ngFor="let cat of categories">{{cat.name}}</li> 
+    <li *ngFor="let cat of cookieCategories" class="list-group-item">
+        <div class="row">
+            <div class="col-md-8">
+                <input class=" form-control" [(ngModel)]="cat.name" />
+            </div>
+            <div class="col-md-4">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button (click)="saveCookieCategory(cat)" class="btn btn-success me-md-2" type="button"><i
+                            class="bi bi-save"></i> Update</button>
+                    <button (click)="toggleCookieCategorieState(cat)" class="btn " type="button" [class.btn-default]="!cat.enable" [class.btn-primary]="cat.enable"><i class="bi"
+                            [class.bi-toggle-off]="!cat.enable"  [class.bi-toggle-on]="cat.enable"></i> Enable</button>
+                </div>
+            </div>
+        </div>
+    </li>
 </ul>
-<button type="button" class="btn btn-primary" (click)="createCategory()">Create</button>
+
+
+<div class="input-group mb-3 mt-3">
+    <input type="text" class="form-control" placeholder="Cookie Category name ..." [(ngModel)]="newCookieCategoryName">
+    <button class="btn btn-outline-secondary" type="button" id="button-addon2" (click)="createCookieCategory()">Create
+        Cookie Category</button>
+</div>
