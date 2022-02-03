@@ -1,3 +1,4 @@
+
 <div>
     <div class="form-group">
         <button *ngIf="currentApplication" (click)="update(currentApplication.id)"
@@ -21,19 +22,25 @@
                 <div class="card-text">
                     <h4>Cookies</h4>
                     <ul class="list-group">
-                        <li class="list-group-item" [class.hide]="c.hide" *ngFor="let c of version.report.driftCookies">
-                            <b>{{c.name}}</b><br />
-                            <i>{{c.url}}</i> 
+                        <li class="list-group-item"
+                            *ngFor="let group of groupByURL(version.report.driftCookies)  | keyvalue">
+                            <b>{{group.key}}</b><br />
+                            <ul class="list-group">
+                                <li class="list-group-item" [class.hide]="c.hide" *ngFor="let c of group.value">
+                                    <i>{{c.name}}</i>
 
-                            <div class="btn-group dropend float-end">
-                                <button type="button" class="btn btn-secondary dropdown-toggle"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    Convert To Template
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <a class="btn dropdown-item" *ngFor="let cat of cookieCategories"  (click)="convertToTemplate(version, c, cat.id)">{{cat.name}}</a>
-                                </ul>
-                            </div>
+                                    <div class="btn-group dropend float-end">
+                                        <button type="button" class="btn btn-secondary dropdown-toggle"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            Convert To Template
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <a class="btn dropdown-item" *ngFor="let cat of cookieCategories"
+                                                (click)="convertToTemplate(version, c, cat.id)">{{cat.name}}</a>
+                                        </ul>
+                                    </div>
+                                </li>
+                            </ul>
 
                         </li>
                     </ul>

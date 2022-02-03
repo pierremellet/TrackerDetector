@@ -78,6 +78,25 @@ export class ApplicationversionComponent implements OnInit {
     ).subscribe(app => this.currentApplication = app);
   }
 
+  groupByURL(driftCookies: any[]){
+
+    const res : {
+      [url: string] : any[]
+    } = {};
+
+    driftCookies.forEach(c => {
+      if(!res[c.url]){
+        res[c.url] = []
+      }
+      res[c.url].push(c);
+    })
+
+    console.log(res);
+
+    return res;
+
+  }
+
   cleanUp(version: any) {
     const query = `
     mutation {

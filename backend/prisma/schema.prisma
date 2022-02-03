@@ -96,5 +96,5 @@ model CookieInstance {
   applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
   applicationVersionId Int
 
-  @@unique([name, domain, applicationVersionId])
+  @@unique([name, domain, url, applicationVersionId])
 }
