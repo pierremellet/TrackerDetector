@@ -1,9 +1,11 @@
-import { Application, Application_URL, Application_Version, CookieCategory, CookieTemplate, Domain, PrismaClient } from "@prisma/client";
-import { bufferTime, concatMap, filter, groupBy, map, mergeAll, mergeMap, Observable, of, tap, windowCount, } from "rxjs";
+import { Application, Application_URL, Application_Version, CookieCategory, CookieTemplate, Domain, PrismaClient, UnknowURL } from "@prisma/client";
+import { bufferTime, concatMap, filter, groupBy, map, mergeAll, mergeMap, Observable, of, switchMap, tap, windowCount, windowTime, } from "rxjs";
 import rootLogger from "./logger";
 import { AppConfig } from "./utils";
 import { PartialReport, TrackedCookie } from "./model";
 import topics from "./topics";
+import ApplicationController from "./controllers/application.controller";
+import { URL } from "url";
 
 export class TrackerFinderController {
     private _log = rootLogger(this.config).getChildLogger({
@@ -15,7 +17,12 @@ export class TrackerFinderController {
         domain: Domain;
     })[] = [];
 
+    public applicationController: ApplicationController;
+
     constructor(private config: AppConfig, private prisma: PrismaClient) {
+
+        this.applicationController = new ApplicationController(config, prisma);
+
         // Index version URL prefix
         this.updateURLIndexOnApplicationVersionUpdate();
 
@@ -34,11 +41,19 @@ export class TrackerFinderController {
     private handleUnknowURL() {
         topics.unknowURLSubject
             .pipe(
-                bufferTime(1000),
-                filter((urls) => urls.length > 0)
+                windowTime(1000),
+                switchMap(u => u)
             )
-            .subscribe(async (urls) => {
-                this._log.debug(`Incomming ${urls.length} unknow urls`);
+            .subscribe(async (u) => {
+                this._log.debug(`Incomming unknow url: ${u}`);
+                try {
+                    await this.prisma.unknowURL.create({
+                        data: {
+                            url: u,
+                            created: new Date()
+                        }
+                    })
+                } catch (err) { }
             });
     }
 
@@ -64,10 +79,10 @@ export class TrackerFinderController {
                     },
                 })
                 .then((cookie) => {
-                    this._log.info(
+                    this._log.debug(
                         `Save drift Cookie for version id(${drift.versionId}), with id(${cookie.id}) and name(${cookie.name})`
                     );
-                });
+                }).catch(()=>{});
         });
     }
 
@@ -119,7 +134,7 @@ export class TrackerFinderController {
             .subscribe(async (reportAndVersion) => {
                 const versions = reportAndVersion.versions;
                 if (!versions || versions.length == 0) {
-                    this._log.error(
+                    this._log.warn(
                         `No version found for report URL ${reportAndVersion.report.url}`
                     );
                     topics.unknowURLSubject.next(reportAndVersion.report.url);
@@ -225,11 +240,7 @@ export class TrackerFinderController {
         return report;
     }
 
-    async convertCookieInstanceToTemplate(
-        versionId: number,
-        categoryId: number,
-        cookieInstanceId: number
-    ) {
+    async convertCookieInstanceToTemplate(versionId: number, categoryId: number, cookieInstanceId: number) {
         const cookieInstance = await this.prisma.cookieInstance.findUnique({
             where: {
                 id: cookieInstanceId,
@@ -275,19 +286,48 @@ export class TrackerFinderController {
         });
     }
 
-    async linkApplicationURLToVersion(versionId: number, applicationURLId: number): Promise<Application_URL> {
-        return this.prisma.application_URL.update({
-            where: {
-                id: applicationURLId,
-            },
-            data: {
-                applicationVersionId: versionId,
-            },
+    async linkUnknowURLToVersion(versionId: number, unknowURLId: number): Promise<Application_URL|null> {
+
+        const unknowURL = await this.prisma.unknowURL.findUnique({
+            where : {
+                id : unknowURLId
+            }
         });
+
+        if(unknowURL){
+            const url = new URL(unknowURL.url);
+            const domain = await this.prisma.domain.findFirst({
+                where : {
+                    name : url.hostname
+                }
+            });
+
+            if(domain){
+               return await this.prisma.application_URL.create({
+                    data : {
+                        created : new Date(),
+                        path : url.pathname,
+                        type : "EXACT",
+                        domain : {
+                            connect : {
+                                id : domain.id
+                            }
+                        },
+                        applicationVersion : {
+                            connect : {
+                                id : versionId
+                            }
+                        }
+                    }
+                });
+            }
+
+        }
+ 
+        return null;
     }
 
     async updateApplicationVersion(version: any): Promise<Application_Version> {
-     
 
         const urlsData = version.urls
             .filter((u: any) => !u.disabled)
@@ -362,52 +402,11 @@ export class TrackerFinderController {
                 },
             },
             where: {
-                id: parseInt(version.id,10),
+                id: parseInt(version.id, 10),
             },
-        });
-    }
-
-    async createApplication(appName: string): Promise<Application> {
-        return this.prisma.application.create({
-            data: {
-                name: appName,
-            },
-        });
-    }
-
-    async deleteApplication(appId: number): Promise<Application> {
-        await this.prisma.application_Version.deleteMany({
-            where: {
-                applicationId: appId,
-            },
-        });
-        return this.prisma.application.delete({
-            where: {
-                id: appId,
-            },
-        });
-    }
-
-    async updateApplication(appId: number, name: string): Promise<Application> {
-        return this.prisma.application.update({
-            where: {
-                id: appId,
-            },
-            data: {
-                name: name,
-            },
-        });
-    }
-
-    public getApplication(id: number): Promise<Application | null> {
-        this._log.debug(`Get application ${id}`);
-        return this.prisma.application.findUnique({
-            where: {
-                id: id,
-            },
-            include: {
-                versions: true,
-            },
+        }).then(u => {
+            topics.applicationVersionChanged.next(u.id);
+            return u;
         });
     }
 

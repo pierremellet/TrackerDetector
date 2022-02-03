@@ -18,5 +18,5 @@ export default {
     /**
      * Topic triggerd when application version is updated
      */
-    applicationVersionChanged: new BehaviorSubject(null)
+    applicationVersionChanged: new BehaviorSubject<number|null>(null)
 }

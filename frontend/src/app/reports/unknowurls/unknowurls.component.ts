@@ -80,7 +80,7 @@ export class UnknowurlsComponent implements OnInit {
     const query =
       `
       mutation {
-        linkApplicationURLToVersion(versionId: ${versionId}, appURLId: ${url.id}){
+        linkUnknowURLToVersion(versionId: ${versionId}, unknowURLId: ${url.id}){
           id
         }
       }

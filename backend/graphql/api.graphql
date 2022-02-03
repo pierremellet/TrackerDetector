@@ -1,9 +1,10 @@
 type Query {
+  "Entrypoint to list all applications"
   allApplications: [Application!]!
   findApplication(id: Int): Application
   allCookieTemplates: [CookieTemplate!]!
   allCookieInstances: [CookieInstance!]!
-  allUnknowURLs: [ApplicationURL!]!
+  allUnknowURLs: [UnknowURL!]!
   configuration: Configuration
 }
 type Mutation {
@@ -25,13 +26,13 @@ type Mutation {
 
   
   convertCookieInstanceToTemplate(
-    versionId: ID
-    CookieCategoryId: ID
-    cookieInstanceId: ID
+    versionId: ID!
+    cookieCategoryId: ID!
+    cookieInstanceId: ID!
   ): CookieTemplate
 
   deleteCookieInstancesForVersion(versionId: ID): Int
-  linkApplicationURLToVersion(versionId: ID, appURLId: ID): ApplicationURL
+  linkUnknowURLToVersion(versionId: ID, unknowURLId: ID): ApplicationURL
 }
 type Subscription {
   appVerCookieNotFounded(appVersionId: ID): CookieInstance

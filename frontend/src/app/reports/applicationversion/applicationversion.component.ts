@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { map } from 'rxjs';
 import { GraphQLService } from 'src/app/graph-ql.service';
+import { CookieCategories } from 'src/app/model';
 import { ToastService } from 'src/app/toast.service';
 
 @Component({
@@ -13,7 +14,7 @@ export class ApplicationversionComponent implements OnInit {
   public applications: Array<any> = [];
   public currentApplication: any | undefined;
   public currentApplicationId: number | undefined = undefined;
-
+  public cookieCategories: CookieCategories[] = [];
 
   constructor(public gql: GraphQLService, private toast: ToastService) { }
 
@@ -23,17 +24,26 @@ export class ApplicationversionComponent implements OnInit {
         id
         name
       }
+      configuration {
+        cookieCategories {
+          id
+          name
+        }
+      }
     }`;
 
     this.gql.sendQuery(allApplicationsQuery).pipe(
-      map((resp: any) => resp.data.allApplications)
-    ).subscribe(applications => this.applications = applications);
+      map((resp: any) => resp.data)
+    ).subscribe(data => {
+       this.applications = data.allApplications;
+       this.cookieCategories = data.configuration.cookieCategories;
+    });
   }
 
-  convertToTemplate(version: any, cookie: any) {
+  convertToTemplate(version: any, cookie: any, cookieCategoryId: number) {
     const query = `
     mutation {
-      convertCookieInstanceToTemplate(versionId: ${version.id}, cookieInstanceId: ${cookie.id}){
+      convertCookieInstanceToTemplate(versionId: ${version.id}, cookieInstanceId: ${cookie.id}, cookieCategoryId: ${cookieCategoryId}){
         id
       }
     }`;

@@ -23,10 +23,18 @@
                     <ul class="list-group">
                         <li class="list-group-item" [class.hide]="c.hide" *ngFor="let c of version.report.driftCookies">
                             <b>{{c.name}}</b><br />
-                            <i>{{c.url}}</i>
-                            <button class="btn btn-primary float-end btn-sm"
-                                (click)="convertToTemplate(version, c)">Convert
-                                To Template</button>
+                            <i>{{c.url}}</i> 
+
+                            <div class="btn-group dropend float-end">
+                                <button type="button" class="btn btn-secondary dropdown-toggle"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    Convert To Template
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <a class="btn dropdown-item" *ngFor="let cat of cookieCategories"  (click)="convertToTemplate(version, c, cat.id)">{{cat.name}}</a>
+                                </ul>
+                            </div>
+
                         </li>
                     </ul>
                 </div>

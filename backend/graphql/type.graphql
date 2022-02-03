@@ -25,7 +25,16 @@ enum ApplicationURLType {
   EXACT
 }
 
+
+
 scalar Date
+
+# URL Inconnue
+type UnknowURL{
+  id: ID
+  url: String
+  created: Date
+}
 
 type ApplicationURL {
   id: ID
