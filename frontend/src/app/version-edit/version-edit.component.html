@@ -59,7 +59,7 @@
                             </div>
                             <div class="col-md-4">
                                 <select [(ngModel)]="url.domain.id" class="form-select">
-                                    <option [value]="dom.id" *ngFor="let dom of domains">{{dom.name}}</option> 
+                                    <option [value]="dom.id" *ngFor="let dom of domains">{{dom.name}}</option>
                                 </select>
                             </div>
 
@@ -106,7 +106,7 @@
                             <div class="form-group col-md-2">
                                 Domain
                             </div>
-                            <div class="form-group col-md-2">
+                            <div class="form-group col-md-1">
                                 Path
                             </div>
                             <div class="form-group col-md-1">
@@ -121,7 +121,7 @@
                             <div class="form-group col-md-1">
                                 Session
                             </div>
-                            <div class="col-md-1">
+                            <div class="col-md-2">
                                 Category
                             </div>
                             <div class="col-md-1"></div>
@@ -133,37 +133,37 @@
                             <div class="form-group col-md-2">
                                 <input [(ngModel)]="cookie.domain" type="text" class="form-control">
                             </div>
-                            <div class="form-group col-md-2">
+                            <div class="form-group col-md-1">
                                 <input [(ngModel)]="cookie.path" type="text" class="form-control">
                             </div>
                             <div class="form-group col-md-1">
-                                <select [(ngModel)]="cookie.hostOnly" class="form-select">
-                                    <option value="true">true</option>
-                                    <option value="false">false</option>
-                                </select>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
+                                        [(ngModel)]="cookie.hostOnly">
+                                </div>
                             </div>
                             <div class="form-group col-md-1">
-                                <select [(ngModel)]="cookie.httpOnly" class="form-select">
-                                    <option value="true">true</option>
-                                    <option value="false">false</option>
-                                </select>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
+                                        [(ngModel)]="cookie.httpOnly">
+                                </div>
                             </div>
-                            <div class="form-group col-md-1">
-                                <select [(ngModel)]="cookie.session" class="form-select">
-                                    <option value="true">true</option>
-                                    <option value="false">false</option>
-                                </select>
+                            <div class="form-group col-md-1">                             
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
+                                        [(ngModel)]="cookie.session">
+                                </div>
                             </div>
-                            <div class="form-group col-md-1">
-                                <select [(ngModel)]="cookie.secure" class="form-select">
-                                    <option value="true">true</option>
-                                    <option value="false">false</option>
-                                </select>
+                            <div class="form-group col-md-1">                              
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
+                                        [(ngModel)]="cookie.secure">
+                                </div>
                             </div>
 
-                            <div class="form-group col-md-1">
+                            <div class="form-group col-md-2">
                                 <select [(ngModel)]="cookie.category.id" class="form-select">
-                                    <option [value]="c.id" *ngFor="let c of cookieCategories">{{c.name}}</option> 
+                                    <option [value]="c.id" *ngFor="let c of cookieCategories">{{c.name}}</option>
                                 </select>
                             </div>
 
