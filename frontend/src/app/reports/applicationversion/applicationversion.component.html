@@ -1,33 +1,77 @@
-
 <div>
-    <div class="form-group">
-        <button *ngIf="currentApplication" (click)="update(currentApplication.id)"
-            class="btn btn-primary float-end">Refresh</button>
-        <label>Select an application</label>
-        <select [(ngModel)]="currentApplicationId" type="text" class="form-select"
-            (change)="onApplicationChange($event)">
-            <option [value]="appli.id" *ngFor="let appli of applications">{{appli.name}}</option>
-        </select>
+    <div class="form-group row align-items-end mt-3">
+        <div class="col-md-9">
+            <label>Select an application</label>
+            <select [(ngModel)]="currentApplicationId" type="text" class="form-select"
+                (change)="onApplicationChange($event)">
+                <option [value]="appli.id" *ngFor="let appli of applications">{{appli.name}}</option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button *ngIf="currentApplication" (click)="update(currentApplication.id)"
+                class="btn btn-primary">Refresh</button>
+        </div>
+        <div class="col-md-2">
+            <button *ngIf="currentApplication" (click)="csvExport(currentApplication.id)"
+                class="btn btn-success">Export To CSV</button>
+        </div>
     </div>
     <br />
     <div *ngIf="currentApplication">
 
-        <div class="card" *ngFor="let version of currentApplication.versions">
+        <div class="card mb-5" *ngFor="let version of currentApplication.versions">
             <div class="card-body">
-                <h3 class="card-title">{{version.name}}
+                <h3 class="card-title mb-5">Version : {{version.name}}
                     <div class="btn-group float-end" role="group" aria-label="Basic example">
                         <button (click)="cleanUp(version)" class="btn btn-danger ">Cleanup Version</button>
                     </div>
                 </h3>
                 <div class="card-text">
-                    <h4>Cookies</h4>
                     <ul class="list-group">
-                        <li class="list-group-item"
+
+                        <div class="accordion" [id]="'_'+index" *ngFor="let group of groupByURL(version.report.driftCookies)  | keyvalue; let index = index">
+                            <div class="accordion-item">
+                              <h2 class="accordion-header" >
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#_'+index+'target'" aria-expanded="true" aria-controls="collapseOne">
+                                    URL : {{group.key}} ({{group.value.length}} cookies)
+                                </button>
+                              </h2>
+                              <div [id]="'_'+index+'target'" class="accordion-collapse collapse" aria-labelledby="headingOne" [attr.data-bs-parent]="'#_'+index">
+                                <div class="accordion-body">
+                                    <ul class="list-group">
+                                        <li class="list-group-item" [class.hide]="c.hide" *ngFor="let c of group.value">
+                                            <b>Name : {{c.name}}</b>
+                                            <br />
+                                            <i>Domain : {{c.domain}}</i>
+        
+                                            <div class="btn-group dropend float-end">
+                                                <button type="button" class="btn btn-secondary dropdown-toggle"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                    Convert To Template
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <a class="btn dropdown-item" *ngFor="let cat of cookieCategories"
+                                                        (click)="convertToTemplate(version, c, cat.id)">{{cat.name}}</a>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                              </div>
+                            </div>
+                        </div>
+
+
+
+
+                   <!--      <li class="list-group-item"
                             *ngFor="let group of groupByURL(version.report.driftCookies)  | keyvalue">
-                            <b>{{group.key}}</b><br />
+                            <div class="lead mt-3 mb-3">URL : {{group.key}}</div>
                             <ul class="list-group">
                                 <li class="list-group-item" [class.hide]="c.hide" *ngFor="let c of group.value">
-                                    <i>{{c.name}}</i>
+                                    <b>Name : {{c.name}}</b>
+                                    <br />
+                                    <i>Domain : {{c.domain}}</i>
 
                                     <div class="btn-group dropend float-end">
                                         <button type="button" class="btn btn-secondary dropdown-toggle"
@@ -42,7 +86,7 @@
                                 </li>
                             </ul>
 
-                        </li>
+                        </li> -->
                     </ul>
                 </div>
             </div>

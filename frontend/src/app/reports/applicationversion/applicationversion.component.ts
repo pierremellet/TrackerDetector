@@ -55,6 +55,26 @@ export class ApplicationversionComponent implements OnInit {
       });
   }
 
+  csvExport(appId: any){
+
+    const report: string[] = [];
+
+    (this.currentApplication.versions as any[]).forEach(version => {
+      const versionName = version.name;
+      version.report.driftCookies.forEach((c:any) => {
+        report.push(`${versionName}, ${c.url}, ${c.name}, ${c.domain}`);
+      })
+    });
+
+    var hiddenElement = document.createElement('a');
+
+    hiddenElement.href = 'data:attachment/csv,' + encodeURI(report.join('\n'));
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'report.csv';
+    hiddenElement.click();
+
+  }
+
   update(appId: any) {
     const query = `{
       findApplication(id: ${appId}){
@@ -89,9 +109,7 @@ export class ApplicationversionComponent implements OnInit {
         res[c.url] = []
       }
       res[c.url].push(c);
-    })
-
-    console.log(res);
+    }) 
 
     return res;
 
