@@ -121,6 +121,9 @@
                             <div class="form-group col-md-1">
                                 Session
                             </div>
+                            <div class="col-md-1">
+                                Category
+                            </div>
                             <div class="col-md-1"></div>
                         </div>
                         <div class="row mb-2" *ngFor="let cookie of version.cookies" [class.d-none]="cookie.disabled">
@@ -155,6 +158,12 @@
                                 <select [(ngModel)]="cookie.secure" class="form-select">
                                     <option value="true">true</option>
                                     <option value="false">false</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-md-1">
+                                <select [(ngModel)]="cookie.category.id" class="form-select">
+                                    <option [value]="c.id" *ngFor="let c of cookieCategories">{{c.name}}</option> 
                                 </select>
                             </div>
 

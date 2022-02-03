@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { GraphQLService } from '../graph-ql.service';
-import { Domain } from '../model';
+import { Domain, CookieCategories } from '../model';
 import { ToastService } from '../toast.service';
 
 @Component({
@@ -19,6 +19,7 @@ export class VersionEditComponent implements OnInit {
   applicationName: any;
   loading = false;
   domains: Domain[] = [];
+  cookieCategories: CookieCategories[] = [];
 
 
   constructor(private route: ActivatedRoute, private gql: GraphQLService, private toast: ToastService) { }
@@ -36,7 +37,10 @@ export class VersionEditComponent implements OnInit {
   addCookie() {
     this.version.cookies.push({
       id: undefined,
-      nameRegex: ".*"
+      nameRegex: ".*",      
+      category: {
+        id: undefined
+      },
     })
   }
 
@@ -57,6 +61,10 @@ export class VersionEditComponent implements OnInit {
     {
       configuration {
         domains {
+          id
+          name
+        }
+        cookieCategories {
           id
           name
         }
@@ -86,6 +94,10 @@ export class VersionEditComponent implements OnInit {
             hostOnly
             secure
             session
+            category{
+              id
+              name
+            }
           }
         }
       }
@@ -97,6 +109,7 @@ export class VersionEditComponent implements OnInit {
         this.applicationName = data.findApplication.name;
         this.version = data.findApplication.versions[0];
         this.domains = data.configuration.domains;
+        this.cookieCategories = data.configuration.cookieCategories; 
       })
 
   }
@@ -134,6 +147,7 @@ export class VersionEditComponent implements OnInit {
           hostOnly: ${cookie.hostOnly}
           secure: ${cookie.secure}
           session: ${cookie.session}
+          category: ${cookie.category.id}
         }`
     });
 
@@ -167,6 +181,10 @@ export class VersionEditComponent implements OnInit {
           hostOnly
           secure
           session
+          category{
+            id
+            name
+          }
         }
       }
     }

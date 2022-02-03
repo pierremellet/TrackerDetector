@@ -43,13 +43,15 @@ const setLocalConfigurationData = (configuration) => {
     });
 }
 
-const getRemoteConfigurationData = (endpoint) => {
+const getDomains = (endpoint) => {
     return new Promise((res, rej) => {
         // Fetch endpoint to get configuration
         const queyString = `
             {
                 configuration {
-                    domains
+                    domains {
+                        name
+                    }
                 }
             }
         `;
@@ -69,16 +71,18 @@ const getRemoteConfigurationData = (endpoint) => {
         })
             .then(resp => resp.json())
             .then(resp => resp.data.configuration)
-            .then(configuration => res(configuration))
+            .then(configuration => res({ "domains": configuration.domains.flatMap(t => t.name)}))
             .catch(err => rej(err));
     });
 }
 
 const updateConfiguration = async () => {
     const endpoint = await getRemoteEndpoint();
+    console.debug(`Endpoint to update conf : `+JSON.stringify(endpoint));
     if (Object.keys(endpoint).length > 0) {
-        const remoteConfiguration = await getRemoteConfigurationData(endpoint);
-        await setLocalConfigurationData(remoteConfiguration);
+        const domains = await getDomains(endpoint);
+        console.debug(`Domains to track : `+JSON.stringify(domains));
+        await setLocalConfigurationData(domains);
     } else {
         console.warn("Missing endpoint");
     }

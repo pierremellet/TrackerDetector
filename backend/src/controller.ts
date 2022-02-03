@@ -329,6 +329,7 @@ export class TrackerFinderController {
                     hostOnly: u.hostOnly,
                     secure: u.secure,
                     session: u.session,
+                    categoryId: u.category
                 };
                 return {
                     where: {

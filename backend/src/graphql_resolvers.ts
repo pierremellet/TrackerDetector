@@ -129,7 +129,19 @@ export default class GraphqlAPI {
                         applicationVersion: {
                             id: appVersion.id
                         }
+                    },
+                    select : {
+                        domain: true,
+                        hostOnly: true,
+                        id: true,
+                        httpOnly: true,
+                        secure: true,
+                        session: true,
+                        category: true,
+                        nameRegex: true,
+                        path: true
                     }
+                
                 })
             },
             Application: {

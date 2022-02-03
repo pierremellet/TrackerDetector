@@ -52,6 +52,7 @@ type CookieTemplate {
   secure: Boolean
   session: Boolean
   disabled: Boolean
+  category: CookieCategory!
 }
 type CookieInstance {
   id: ID

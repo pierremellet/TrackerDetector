@@ -119,6 +119,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     const settings = await getLocalConfigurationData();
 
+console.log(settings);
     // If message is page-unload and current tag domain is inclued within configured domains
     if (
         message == "page-unload"
