@@ -92,9 +92,9 @@ model CookieInstance {
   session              Boolean
   timestamp            Int
   duration             Float?
-  url                  String
+  pageURL              String
   applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
   applicationVersionId Int
 
-  @@unique([name, domain, url, applicationVersionId])
+  @@unique([name, domain, pageURL, applicationVersionId])
 }

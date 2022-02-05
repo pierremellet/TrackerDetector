@@ -1,7 +1,7 @@
 export class PartialReport {
 
     constructor(
-        public url: string,
+        public pageURL: string,
         public cookies: TrackedCookie[] = []
     ) { }
 

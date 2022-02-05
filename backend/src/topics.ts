@@ -16,7 +16,7 @@ export default {
     unknowURLSubject: new Subject<string>(),
 
     /**
-     * Topic triggerd when application version is updated
+     * Topic triggerd when application version is updated 
      */
-    applicationVersionChanged: new BehaviorSubject<number|null>(null)
+    applicationVersionChanged: new BehaviorSubject<number | null>(null)
 }

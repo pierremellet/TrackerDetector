@@ -48,7 +48,6 @@ export default class GraphqlAPI {
                     return await this.controller.createApplicationVersion(parseInt(params.appId, 10), params.versionName);
                 },
                 createPartialReport: (_: any, params: any) => {
-                    const prms: Promise<CookieInstance>[] = [];
                     topics.rawPartialReportSubject.next(params.input);
                     return "ok";
                 },

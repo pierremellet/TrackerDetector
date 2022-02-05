@@ -36,6 +36,6 @@ input ApplicationVersionInput {
   cookies: [CookieTemplateInput!]!
 }
 input PartialReport {
-  url: String!
+  pageURL: String!
   cookies: [CookieInstanceInput!]!
 }

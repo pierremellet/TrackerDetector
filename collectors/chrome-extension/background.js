@@ -30,7 +30,7 @@ const postReport = async (report, endpoint) => {
     const queyString = `
     mutation {
         createPartialReport(input: {
-          url : "${report.url}"
+          pageURL : "${report.pageURL}"
           cookies : [${report.cookies.map(c => cookieToGQLString(c)).join(',')}]
         })
       }
@@ -142,9 +142,8 @@ console.log(settings);
         });
 
         const trackingReport = {
-            url: sender.url,
-            cookies: cookies,
-            pixels: []
+            pageURL: sender.url,
+            cookies: cookies
         }
         const endpoint = await getRemoteEndpoint();
         await postReport(trackingReport, endpoint);

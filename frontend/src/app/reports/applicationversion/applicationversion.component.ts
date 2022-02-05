@@ -35,8 +35,8 @@ export class ApplicationversionComponent implements OnInit {
     this.gql.sendQuery(allApplicationsQuery).pipe(
       map((resp: any) => resp.data)
     ).subscribe(data => {
-       this.applications = data.allApplications;
-       this.cookieCategories = data.configuration.cookieCategories;
+      this.applications = data.allApplications;
+      this.cookieCategories = data.configuration.cookieCategories;
     });
   }
 
@@ -55,13 +55,13 @@ export class ApplicationversionComponent implements OnInit {
       });
   }
 
-  csvExport(appId: any){
+  csvExport(appId: any) {
 
     const report: string[] = [];
 
     (this.currentApplication.versions as any[]).forEach(version => {
       const versionName = version.name;
-      version.report.driftCookies.forEach((c:any) => {
+      version.report.driftCookies.forEach((c: any) => {
         report.push(`${versionName}, ${c.url}, ${c.name}, ${c.domain}`);
       })
     });
@@ -86,7 +86,7 @@ export class ApplicationversionComponent implements OnInit {
               id
               name
               domain
-              url
+              pageURL
             }
           }
         }
@@ -98,18 +98,18 @@ export class ApplicationversionComponent implements OnInit {
     ).subscribe(app => this.currentApplication = app);
   }
 
-  groupByURL(driftCookies: any[]){
+  groupByURL(driftCookies: any[]) {
 
-    const res : {
-      [url: string] : any[]
+    const res: {
+      [pageURL: string]: any[]
     } = {};
 
     driftCookies.forEach(c => {
-      if(!res[c.url]){
-        res[c.url] = []
+      if (!res[c.pageURL]) {
+        res[c.pageURL] = []
       }
-      res[c.url].push(c);
-    }) 
+      res[c.pageURL].push(c);
+    })
 
     return res;
 

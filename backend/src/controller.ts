@@ -70,7 +70,7 @@ export class TrackerFinderController {
                         secure: drift.cookie.secure,
                         session: drift.cookie.session,
                         timestamp: new Date().getTime(),
-                        url: drift.url,
+                        pageURL: drift.url,
                         applicationVersion: {
                             connect: {
                                 id: drift.versionId,
@@ -95,10 +95,10 @@ export class TrackerFinderController {
                         .filter((u) => {
                             const matchURL = `https://${u.domain.name}${u.path}`;
                             if (u.type === "PREFIX") {
-                                return report.url.startsWith(matchURL);
+                                return report.pageURL.startsWith(matchURL);
                             }
                             if (u.type === "EXACT") {
-                                return report.url === matchURL;
+                                return report.pageURL === matchURL;
                             }
                             return false;
                         })
@@ -135,9 +135,9 @@ export class TrackerFinderController {
                 const versions = reportAndVersion.versions;
                 if (!versions || versions.length == 0) {
                     this._log.warn(
-                        `No version found for report URL ${reportAndVersion.report.url}`
+                        `No version found for report URL ${reportAndVersion.report.pageURL}`
                     );
-                    topics.unknowURLSubject.next(reportAndVersion.report.url);
+                    topics.unknowURLSubject.next(reportAndVersion.report.pageURL);
                 } else {
                     versions.forEach((version) => {
                         reportAndVersion.report.cookies.forEach((cookieInstance) => {
@@ -154,7 +154,7 @@ export class TrackerFinderController {
                                 topics.driftCookiesSubject.next({
                                     appId: version.application.id,
                                     versionId: version.id,
-                                    url: reportAndVersion.report.url,
+                                    url: reportAndVersion.report.pageURL,
                                     cookie: cookieInstance,
                                 });
                             }
@@ -168,13 +168,13 @@ export class TrackerFinderController {
         topics.rawPartialReportSubject
             .pipe(
                 tap((report) =>
-                    this._log.debug(`Partial report received for URL : ${report.url}`)
+                    this._log.debug(`Partial report received for URL : ${report.pageURL}`)
                 ),
                 map((report) => this.removeURLParams(report)),
                 windowCount(config.input_buffer),
                 map((win) =>
                     win.pipe(
-                        groupBy((report) => report.url),
+                        groupBy((report) => report.pageURL),
                         mergeMap((group) => {
                             return of(new PartialReport(group.key, this.dedupCookies(group)));
                         })
@@ -233,9 +233,9 @@ export class TrackerFinderController {
     }
 
     private removeURLParams(report: PartialReport): PartialReport {
-        const paramStartPost = report.url.indexOf("?");
+        const paramStartPost = report.pageURL.indexOf("?");
         if (paramStartPost !== -1) {
-            report.url = report.url.substring(0, paramStartPost);
+            report.pageURL = report.pageURL.substring(0, paramStartPost);
         }
         return report;
     }
