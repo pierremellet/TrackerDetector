@@ -14,10 +14,11 @@ import { VersionEditComponent } from './version-edit/version-edit.component';
 import { ReportsComponent } from './reports/reports.component';
 import { ToastComponent } from './toast/toast.component';
 import { UnknowurlsComponent } from './reports/unknowurls/unknowurls.component';
-import { ApplicationversionComponent } from './reports/applicationversion/applicationversion.component';
+import { UnknowcookiesComponent } from './reports/unknowcookies/unknowcookies.component';
 import { SettingsComponent } from './settings/settings.component';
 import { CookieCategoriesComponent } from './settings/cookie-categories/cookie-categories.component';
 import { DomainsComponent } from './settings/domains/domains.component';
+import { PixelEditComponent } from './version-edit/pixel-edit/pixel-edit.component';
 
 @NgModule({
   declarations: [
@@ -31,10 +32,11 @@ import { DomainsComponent } from './settings/domains/domains.component';
     ReportsComponent,
     ToastComponent,
     UnknowurlsComponent,
-    ApplicationversionComponent,
+    UnknowcookiesComponent,
     SettingsComponent,
     CookieCategoriesComponent,
-    DomainsComponent
+    DomainsComponent,
+    PixelEditComponent
   ],
   imports: [
     AppRoutingModule,

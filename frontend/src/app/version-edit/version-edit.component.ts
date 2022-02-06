@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 import { GraphQLService } from '../graph-ql.service';
 import { Domain, CookieCategories } from '../model';
@@ -22,7 +22,7 @@ export class VersionEditComponent implements OnInit {
   cookieCategories: CookieCategories[] = [];
 
 
-  constructor(private route: ActivatedRoute, private gql: GraphQLService, private toast: ToastService) { }
+  constructor(private route: ActivatedRoute, private router: Router, private gql: GraphQLService, private toast: ToastService) { }
 
   addURL() {
     this.version.urls.push({
@@ -37,7 +37,7 @@ export class VersionEditComponent implements OnInit {
   addCookie() {
     this.version.cookies.push({
       id: undefined,
-      nameRegex: ".*",      
+      nameRegex: ".*",
       category: {
         id: undefined
       },
@@ -46,6 +46,20 @@ export class VersionEditComponent implements OnInit {
 
   remove(element: any) {
     element['disabled'] = true;
+  }
+  delete(version: any) {
+    if (window.confirm(`Delete application version : ${version.name} ?`)) {
+
+      const query = `
+      mutation{
+        deleteApplicationVersion(versionId: ${version.id}){
+          id
+        }
+      }
+    `;
+
+      this.gql.sendQuery(query).subscribe(() => this.router.navigate(['/applications', this.appId]))
+    }
   }
 
   ngOnInit(): void {
@@ -109,7 +123,7 @@ export class VersionEditComponent implements OnInit {
         this.applicationName = data.findApplication.name;
         this.version = data.findApplication.versions[0];
         this.domains = data.configuration.domains;
-        this.cookieCategories = data.configuration.cookieCategories; 
+        this.cookieCategories = data.configuration.cookieCategories;
       })
 
   }

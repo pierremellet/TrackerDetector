@@ -5,11 +5,11 @@ import { CookieCategories } from 'src/app/model';
 import { ToastService } from 'src/app/toast.service';
 
 @Component({
-  selector: 'app-applicationversion',
-  templateUrl: './applicationversion.component.html',
-  styleUrls: ['./applicationversion.component.scss']
+  selector: 'app-unknowcookies',
+  templateUrl: './unknowcookies.component.html',
+  styleUrls: ['./unknowcookies.component.scss']
 })
-export class ApplicationversionComponent implements OnInit {
+export class UnknowcookiesComponent implements OnInit {
 
   public applications: Array<any> = [];
   public currentApplication: any | undefined;

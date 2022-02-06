@@ -17,6 +17,7 @@ type Mutation {
 
   createApplicationVersion(appId: ID, versionName: String): ApplicationVersion
   updateApplicationVersion(version: ApplicationVersionInput): ApplicationVersion
+  deleteApplicationVersion(versionId: ID!): ApplicationVersion
 
   createCookieCategory(name: String!): CookieCategory
   updateCookieCategory(cookieCategoryId: ID!, cookieCategoryName: String, cookieCategoryEnable: Boolean): CookieCategory

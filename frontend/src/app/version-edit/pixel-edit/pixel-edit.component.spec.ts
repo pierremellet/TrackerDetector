@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ApplicationversionComponent } from './applicationversion.component';
+import { PixelEditComponent } from './pixel-edit.component';
 
-describe('ApplicationversionComponent', () => {
-  let component: ApplicationversionComponent;
-  let fixture: ComponentFixture<ApplicationversionComponent>;
+describe('PixelEditComponent', () => {
+  let component: PixelEditComponent;
+  let fixture: ComponentFixture<PixelEditComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ApplicationversionComponent ]
+      declarations: [ PixelEditComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ApplicationversionComponent);
+    fixture = TestBed.createComponent(PixelEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

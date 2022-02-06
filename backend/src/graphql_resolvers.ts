@@ -44,6 +44,9 @@ export default class GraphqlAPI {
                 updateApplicationVersion: async (_: any, params: any) => {
                     return await this.controller.updateApplicationVersion(params.version);
                 },
+                deleteApplicationVersion: async (_: any, params: any) => {
+                    return await this.controller.deleteApplicationVersion(parseInt(params.versionId, 10));
+                },
                 createApplicationVersion: async (_: any, params: any) => {
                     return await this.controller.createApplicationVersion(parseInt(params.appId, 10), params.versionName);
                 },

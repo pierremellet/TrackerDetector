@@ -1,9 +1,22 @@
 <div *ngIf="version">
-    <h2>
-        <button class="btn btn-back" [routerLink]="['/applications', appId]"></button>
-        <span>{{applicationName}} > {{version.name}} </span>
-        <button class="btn btn-primary float-end" [class.disabled]="loading" (click)="save()">Save Version</button>
-    </h2>
+    <header>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end float-end">
+            <button class="btn btn-primary" type="button" [class.disabled]="loading" (click)="save()">Save
+                Version</button>
+            <button class="btn btn-danger" type="button" [class.disabled]="loading" (click)="delete(version)">Delete
+                Version</button>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb fs-2 lead">
+                <li class="breadcrumb-item"><a href="#" [routerLink]="['/applications']">Applications</a></li>
+                <li class="breadcrumb-item"><a href="#"
+                        [routerLink]="['/applications', appId]">{{applicationName}}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{version.name}}</li>
+            </ol>
+
+        </nav>
+
+    </header>
     <div>
         <div class="card">
             <div class="card-body">
@@ -29,7 +42,7 @@
         <div class="card">
             <div class="card-body">
                 <div class="card-text ">
-                    <h3 class="mt-3">URL
+                    <h3 class=" ">Tracked URL
                         <button class="btn btn-primary btn-sm float-end bi bi-plus-lg" (click)="addURL()"></button>
                     </h3>
                     <div>
@@ -91,7 +104,7 @@
         <div class="card  ">
             <div class="card-body">
                 <div class="card-text ">
-                    <h3 class="mt-3">Cookie Templates
+                    <h3 class=" ">Cookie Templates
                         <button class="btn btn-primary btn-sm float-end bi bi-plus-lg " (click)="addCookie()"> </button>
                     </h3>
                     <div>
@@ -148,13 +161,13 @@
                                         [(ngModel)]="cookie.httpOnly">
                                 </div>
                             </div>
-                            <div class="form-group col-md-1">                             
+                            <div class="form-group col-md-1">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
                                         [(ngModel)]="cookie.session">
                                 </div>
                             </div>
-                            <div class="form-group col-md-1">                              
+                            <div class="form-group col-md-1">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
                                         [(ngModel)]="cookie.secure">
@@ -177,5 +190,9 @@
                 </div>
             </div>
         </div>
+
+        <br/>
+
+        <app-pixel-edit [version]="version"></app-pixel-edit>
     </div>
 </div>

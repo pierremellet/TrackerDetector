@@ -9,3 +9,8 @@ export type CookieCategories = {
   name: string,
   enable: boolean
 }
+
+export type ApplicationVersion = {
+  id: number,
+  name: string
+}

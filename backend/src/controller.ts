@@ -327,6 +327,14 @@ export class TrackerFinderController {
         return null;
     }
 
+    async deleteApplicationVersion(versionId: number): Promise<Application_Version> {
+        return this.prisma.application_Version.delete({
+            where : {
+                id : versionId
+            }
+        })
+    }
+
     async updateApplicationVersion(version: any): Promise<Application_Version> {
 
         const urlsData = version.urls

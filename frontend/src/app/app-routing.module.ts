@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ApplicationEditComponent } from './application-edit/application-edit.component';
 import { ApplicationListComponent } from './application-list/application-list.component';
-import { ApplicationversionComponent } from './reports/applicationversion/applicationversion.component';
+import { UnknowcookiesComponent } from './reports/unknowcookies/unknowcookies.component';
 import { ReportsComponent } from './reports/reports.component';
 import { UnknowurlsComponent } from './reports/unknowurls/unknowurls.component';
 import { CookieCategoriesComponent } from './settings/cookie-categories/cookie-categories.component';
@@ -18,8 +18,8 @@ const routes: Routes = [
     path: 'reports', component: ReportsComponent, children: [
       { path: '', redirectTo: 'applications', pathMatch: 'full' },
       {
-        path: 'applications',
-        component: ApplicationversionComponent,
+        path: 'unknowcookies',
+        component: UnknowcookiesComponent,
       },
       {
         path: 'unknowurls',

@@ -1,15 +1,20 @@
 <div *ngIf="app">
-    <h2>
-        <button class="btn btn-back" [routerLink]="['/applications']"></button>
-        <span>{{appForm.get('appName')?.value}}</span>
-        <div class="btn-group float-end" role="group" aria-label="Application Controls">
-            <button type="submit" class="btn btn-primary  " (click)="submit()">Save Application</button>
-            <button type="submit" class="btn btn-danger   " (click)="deleteApp()">
+ 
+    <header>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end float-end">
+            <button type="button" class="btn btn-primary  " (click)="submit()">Save Application</button>
+            <button type="button" class="btn btn-danger   " (click)="deleteApp()">
                 <i class="bi bi-trash"></i>
                 Delete</button>
         </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb fs-2 lead">
+                <li class="breadcrumb-item"><a href="#" [routerLink]="['/applications']">Applications</a></li>
+                <li class="breadcrumb-item active">{{appForm.get('appName')?.value}}</li> 
+            </ol>
 
-    </h2>
+        </nav>
+    </header>
 
     <br />
 
