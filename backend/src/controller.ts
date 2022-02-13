@@ -6,6 +6,7 @@ import { PartialReport, TrackedCookie } from "./model";
 import topics from "./topics";
 import ApplicationController from "./controllers/application.controller";
 import { URL } from "url";
+import DomainController from "./controllers/domain.controller";
 
 export class TrackerFinderController {
     private _log = rootLogger(this.config).getChildLogger({
@@ -18,10 +19,12 @@ export class TrackerFinderController {
     })[] = [];
 
     public applicationController: ApplicationController;
+    public domainController: DomainController;
 
     constructor(private config: AppConfig, private prisma: PrismaClient) {
 
         this.applicationController = new ApplicationController(config, prisma);
+        this.domainController = new DomainController(config, prisma);
 
         // Index version URL prefix
         this.updateURLIndexOnApplicationVersionUpdate();
@@ -82,7 +85,7 @@ export class TrackerFinderController {
                     this._log.debug(
                         `Save drift Cookie for version id(${drift.versionId}), with id(${cookie.id}) and name(${cookie.name})`
                     );
-                }).catch(()=>{});
+                }).catch(() => { });
         });
     }
 
@@ -286,36 +289,36 @@ export class TrackerFinderController {
         });
     }
 
-    async linkUnknowURLToVersion(versionId: number, unknowURLId: number): Promise<Application_URL|null> {
+    async linkUnknowURLToVersion(versionId: number, unknowURLId: number): Promise<Application_URL | null> {
 
         const unknowURL = await this.prisma.unknowURL.findUnique({
-            where : {
-                id : unknowURLId
+            where: {
+                id: unknowURLId
             }
         });
 
-        if(unknowURL){
+        if (unknowURL) {
             const url = new URL(unknowURL.url);
             const domain = await this.prisma.domain.findFirst({
-                where : {
-                    name : url.hostname
+                where: {
+                    name: url.hostname
                 }
             });
 
-            if(domain){
-               return await this.prisma.application_URL.create({
-                    data : {
-                        created : new Date(),
-                        path : url.pathname,
-                        type : "EXACT",
-                        domain : {
-                            connect : {
-                                id : domain.id
+            if (domain) {
+                return await this.prisma.application_URL.create({
+                    data: {
+                        created: new Date(),
+                        path: url.pathname,
+                        type: "EXACT",
+                        domain: {
+                            connect: {
+                                id: domain.id
                             }
                         },
-                        applicationVersion : {
-                            connect : {
-                                id : versionId
+                        applicationVersion: {
+                            connect: {
+                                id: versionId
                             }
                         }
                     }
@@ -323,7 +326,7 @@ export class TrackerFinderController {
             }
 
         }
- 
+
         return null;
     }
 
@@ -422,33 +425,7 @@ export class TrackerFinderController {
         });
     }
 
-    createDomain(domainName: string) {
-        if (domainName === undefined || domainName.length === 0) {
-            throw new Error("domainName can't be null");
-        }
-        return this.prisma.domain.create({
-            data: {
-                name: domainName,
-                enable: true,
-            },
-        });
-    }
 
-    public updateDomain(domaineId: number, domainName: string, domainEnable: boolean) {
-        const data: any = {};
-        if (domainName !== undefined) {
-            data.name = domainName;
-        }
-        if (domainEnable !== undefined) {
-            data.enable = domainEnable;
-        }
-        return this.prisma.domain.update({
-            where: {
-                id: domaineId,
-            },
-            data,
-        });
-    }
 
     public async updateCookieCategory(cookieCategoryId: number, cookieCategoryName: string, cookieCategoryEnable: string): Promise<CookieCategory> {
         const data: any = {};

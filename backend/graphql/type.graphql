@@ -12,9 +12,17 @@ type CookieCategory{
   name: String
   enable: Boolean
 }
+
+"Configuration of tracked application"
 type Application {
+
+  "Unique Tech ID"
   id: ID
+
+  "Application screen name"
   name: String
+
+  "Application versions"
   versions(filter: Int): [ApplicationVersion!]
 }
 type ApplicationReport {

@@ -18,10 +18,10 @@ export default class GraphqlAPI {
         this.resolvers = {
             Mutation: {
                 createDomain: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.createDomain(params.domainName);
+                    return await this.controller.domainController.createDomain(params.domainName);
                 },
                 updateDomain: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.updateDomain(parseInt(params.domainId, 10), params.domainName, params.domainEnable);
+                    return await this.controller.domainController.updateDomain(parseInt(params.domainId, 10), params.domainName, params.domainEnable);
                 },
                 createCookieCategory: async (_: any, params: any): Promise<any> => {
                     return await this.controller.createCookieCategory(params.name);
