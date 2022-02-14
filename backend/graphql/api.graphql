@@ -24,7 +24,10 @@ type Mutation {
   createDomain(domainName: String!): Domain
   updateDomain(domainId: ID!, domainName: String, domainEnable: Boolean): Domain
 
-  
+  createPixelTemplate(uri: String!, type: String!, versionId: ID!): PixelTemplate
+  updatePixelTemplate(pixelTemplateId: ID!, uri: String, type: String): PixelTemplate
+  deletePixelTemplate(pixelTemplateId: ID!): PixelTemplate
+
   convertCookieInstanceToTemplate(
     versionId: ID!
     cookieCategoryId: ID!

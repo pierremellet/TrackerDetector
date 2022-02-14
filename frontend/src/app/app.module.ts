@@ -18,6 +18,7 @@ import { ApplicationversionComponent } from './reports/applicationversion/applic
 import { SettingsComponent } from './settings/settings.component';
 import { CookieCategoriesComponent } from './settings/cookie-categories/cookie-categories.component';
 import { DomainsComponent } from './settings/domains/domains.component';
+import { PixeltemplateListComponent } from './version-edit/pixeltemplate-list/pixeltemplate-list.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +35,8 @@ import { DomainsComponent } from './settings/domains/domains.component';
     ApplicationversionComponent,
     SettingsComponent,
     CookieCategoriesComponent,
-    DomainsComponent
+    DomainsComponent,
+    PixeltemplateListComponent
   ],
   imports: [
     AppRoutingModule,

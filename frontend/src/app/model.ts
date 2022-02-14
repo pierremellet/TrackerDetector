@@ -4,8 +4,17 @@ export type Domain = {
   enable: boolean
 }
 
-export type CookieCategories = {
-  id: number,
-  name: string,
+export type DisablableItem = {
   enable: boolean
 }
+
+export type CookieCategories = {
+  id: number,
+  name: string
+} & DisablableItem
+
+export type PixelTemplate = {
+  id?: number,
+  uri: string,
+  type: string
+} & DisablableItem

@@ -85,6 +85,11 @@ export class VersionEditComponent implements OnInit {
             }
             type
           }
+          pixels{
+            id
+            uri
+            type
+          }
           cookies{
             id
             nameRegex
@@ -199,6 +204,7 @@ export class VersionEditComponent implements OnInit {
         this.toast.show("Application Version", "Updated !");
       })
   }
+
 
 
 

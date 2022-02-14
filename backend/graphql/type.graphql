@@ -13,6 +13,12 @@ type CookieCategory{
   enable: Boolean
 }
 
+type PixelTemplate {
+  id: ID
+  uri: String
+  type: ApplicationURLType
+}
+
 "Configuration of tracked application"
 type Application {
 
@@ -28,6 +34,7 @@ type Application {
 type ApplicationReport {
   driftCookies: [CookieInstance!]
 }
+
 enum ApplicationURLType {
   PREFIX
   EXACT
@@ -57,6 +64,7 @@ type ApplicationVersion {
   enable: Boolean
   urls: [ApplicationURL!]
   cookies: [CookieTemplate!]
+  pixels: [PixelTemplate!]
   report: ApplicationReport
 }
 type CookieTemplate {
