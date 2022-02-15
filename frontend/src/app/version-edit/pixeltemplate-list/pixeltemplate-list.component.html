@@ -1,6 +1,9 @@
 <h3 class="mt-3">Pixel Templates
     <button class="btn btn-primary btn-sm float-end bi bi-plus-lg " (click)="addPixel()"> </button>
 </h3>
+<div *ngIf="!pixels || pixels.length == 0" class="alert alert-primary" role="alert">
+    No Pixel Templates, click '+' to add one
+</div>
 <div class="row mb-3" *ngIf="pixels.length > 0">
     <div class="form-group col-md-7">
         URI (regex)
@@ -12,7 +15,7 @@
 
     </div>
 </div>
-<div class="row mb-2" *ngFor="let pixel of pixels" [class.d-none]="pixel.enable == false">
+<div class="row mb-2" *ngFor="let pixel of pixels">
     <div class="form-group col-md-7">
         <input [(ngModel)]="pixel.uri" type="text" class="form-control">
     </div>
@@ -26,6 +29,3 @@
         <button class="btn btn-secondary" (click)="remove(pixel)"><i class="bi bi-trash"></i></button>
     </div>
 </div>
-
-
-<button class="btn btn-primary btn float-end bi bi-save" *ngIf="pixels.length > 0" (click)="save()"> </button>

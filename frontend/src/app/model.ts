@@ -17,4 +17,4 @@ export type PixelTemplate = {
   id?: number,
   uri: string,
   type: string
-} & DisablableItem
+}
