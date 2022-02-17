@@ -91,7 +91,7 @@ model CookieTemplate {
 
   @@unique([nameRegex, domain, applicationVersionId])
 }
-
+ 
 model CookieInstance {
   id                   Int                 @id @default(autoincrement())
   name                 String

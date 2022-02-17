@@ -30,7 +30,7 @@ export class DriftCookie {
         public versionId: number,
         public url: string,
         public cookie: TrackedCookie,
-        public ressourceURLs : string[],
+        public ressourceURLs : Context[],
     ) { }
 
 }

@@ -16,7 +16,7 @@ export class UnknowcookiesComponent implements OnInit {
   public currentApplication: any | undefined;
   public currentApplicationId: number | undefined = undefined;
   public cookieCategories: CookieCategories[] = [];
-  currentURLs: string[] = [];
+  currentURLs: any[] = [];
 
   constructor(public gql: GraphQLService, private toast: ToastService) { }
 
@@ -94,7 +94,10 @@ export class UnknowcookiesComponent implements OnInit {
               domain
               duration
               pageURL
-              ressourceURLs
+              ressourceURLs {
+                url
+                initiator
+              }
             }
           }
         }

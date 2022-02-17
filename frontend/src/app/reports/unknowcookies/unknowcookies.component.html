@@ -96,8 +96,15 @@
             </div>
             <div class="modal-body">
                 <ul class="list-group">
-                    <li class="list-group-item" *ngFor="let url of currentURLs">
-                        {{url}}</li>
+                    <li class="list-group-item" *ngFor="let ctx of currentURLs">
+                        <i class="bi "
+                        [class.bi-send]="ctx.initiator == 'xmlhttprequest'"
+                        [class.bi-card-image]="ctx.initiator == 'img'"
+                        [class.bi-filetype-css]="ctx.initiator == 'css'"
+                        [class.bi-filetype-html]="ctx.initiator == 'navigation'"
+                        [class.bi-link]="ctx.initiator == 'link'"
+                        [class.bi-code-slash]="ctx.initiator == 'script'"></i> {{ctx.url}}
+                    </li>
                 </ul>
             </div>
             <div class="modal-footer">

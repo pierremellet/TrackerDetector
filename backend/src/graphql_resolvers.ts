@@ -114,7 +114,10 @@ export default class GraphqlAPI {
                         }
                     })
                     return {
-                        "driftCookies": driftCookies
+                        "driftCookies": driftCookies.map(c => {
+                            c.ressourceURLs = c.ressourceURLs.map(r => JSON.parse(r));
+                            return c;
+                        })
                     };
                 },
                 urls: (appVersion: any) => prisma.application_URL.findMany({
