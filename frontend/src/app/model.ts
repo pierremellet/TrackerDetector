@@ -10,7 +10,8 @@ export type DisablableItem = {
 
 export type CookieCategories = {
   id: number,
-  name: string
+  name: string,
+  duration: number
 } & DisablableItem
 
 export type PixelTemplate = {

@@ -68,6 +68,7 @@ export class TrackerFinderController {
 
     private handleDriftCookies() {
         topics.driftCookiesSubject.subscribe((drift) => {
+            var duration = drift.cookie.expirationDate ?  drift.cookie.expirationDate - ((new Date().getTime())/1000) : 0;
             this.prisma.cookieInstance
                 .create({
                     data: {
@@ -79,6 +80,7 @@ export class TrackerFinderController {
                         secure: drift.cookie.secure,
                         session: drift.cookie.session,
                         timestamp: new Date().getTime(),
+                        duration: duration,
                         pageURL: drift.url,
                         applicationVersion: {
                             connect: {
@@ -94,6 +96,7 @@ export class TrackerFinderController {
                 }).catch(() => { });
         });
     }
+
 
     private handleIncommingSanitizedReports() {
         topics.sanitizedPartialReportSubject
@@ -115,7 +118,7 @@ export class TrackerFinderController {
                             version.cookieTemplates.forEach(
                                 (cookieTemplate: CookieTemplate) => {
                                     const regex = new RegExp(cookieTemplate.nameRegex);
-                                    if (cookieInstance.name.match(regex)) {
+                                    if (cookieInstance.cookie.name.match(regex)) {
                                         match = true;
                                     }
                                 }
@@ -125,7 +128,7 @@ export class TrackerFinderController {
                                     appId: version.application.id,
                                     versionId: version.id,
                                     url: reportAndVersion.report.pageURL,
-                                    cookie: cookieInstance,
+                                    cookie: cookieInstance.cookie,
                                 });
                             }
                         });
@@ -134,23 +137,21 @@ export class TrackerFinderController {
             });
     }
 
+
+    private b64reportToJSON(b64: any): PartialReport {
+        const buffer = Buffer.from(b64, 'base64');
+        const stringReport = buffer.toString('ascii');
+        return JSON.parse(stringReport);
+    }
+
     private handleIncommingReports(config: AppConfig) {
         topics.rawPartialReportSubject
             .pipe(
+                map(this.b64reportToJSON),
                 tap((report) =>
                     this._log.debug(`Partial report received for URL : ${report.pageURL}`)
                 ),
-                map(this.removeURLParams),
-                windowCount(config.input_buffer),
-                map((win) =>
-                    win.pipe(
-                        groupBy((report) => report.pageURL),
-                        mergeMap((group) => {
-                            return of(new PartialReport(group.key, this.dedupCookies(group)));
-                        })
-                    )
-                ),
-                mergeAll()
+                map(this.removeURLParams)
             )
             .subscribe((sanitizedReport) => {
                 topics.sanitizedPartialReportSubject.next(sanitizedReport);
@@ -190,6 +191,7 @@ export class TrackerFinderController {
             .then((res) => res.count);
     }
 
+    /*
     private dedupCookies(group: Observable<PartialReport>): TrackedCookie[] {
         const cookies: TrackedCookie[] = [];
         group.forEach((report) => {
@@ -200,7 +202,7 @@ export class TrackerFinderController {
             });
         });
         return cookies;
-    }
+    }*/
 
     private removeURLParams(report: PartialReport): PartialReport {
         const paramStartPost = report.pageURL.indexOf("?");

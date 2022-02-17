@@ -2,9 +2,21 @@ export class PartialReport {
 
     constructor(
         public pageURL: string,
-        public cookies: TrackedCookie[] = []
+        public cookies: CookieContextsInstance[] = [],
+        public contexts: Context[] = []
     ) { }
 
+}
+
+export type Context = {
+    id: number
+    url: string
+    initiator: string
+}
+
+export type CookieContextsInstance = {
+    cookie: TrackedCookie,
+    contextIds: number[]
 }
 
 export enum URLType {
@@ -13,14 +25,15 @@ export enum URLType {
 }
 
 export class DriftCookie {
-    constructor( 
+    constructor(
         public appId: number,
         public versionId: number,
-        public  url: string,
-        public cookie: TrackedCookie 
-    ){}
+        public url: string,
+        public cookie: TrackedCookie
+    ) { }
 
 }
+
 export class TrackedCookie {
 
     constructor(
@@ -32,6 +45,7 @@ export class TrackedCookie {
         public secure: boolean,
         public session: boolean,
         public timestamp: number,
+        public expirationDate: number | null,
         public duration: number | null) {
 
     }

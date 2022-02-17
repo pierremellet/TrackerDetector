@@ -54,13 +54,13 @@ export default class GraphqlAPI {
                     return await this.controller.applicationVersionController.updateApplicationVersion(params.version);
                 },
                 deleteApplicationVersion: async (_: any, params: any) => {
-                    return await this.controller.deleteApplicationVersion(parseInt(params.versionId, 10));
+                    return await this.controller.applicationVersionController.deleteApplicationVersion(parseInt(params.versionId, 10));
                 },
                 createApplicationVersion: async (_: any, params: any) => {
                     return await this.controller.applicationVersionController.createApplicationVersion(parseInt(params.appId, 10), params.versionName);
                 },
                 createPartialReport: (_: any, params: any) => {
-                    topics.rawPartialReportSubject.next(params.input);
+                    topics.rawPartialReportSubject.next(params.report);
                     return "ok";
                 },
                 createApplication: async (_: any, params: any) => {
@@ -132,8 +132,8 @@ export default class GraphqlAPI {
                     }
                 }),
                 pixels: (appVersion: any) => prisma.pixelTemplate.findMany({
-                    where : {
-                        applicationVersion : {
+                    where: {
+                        applicationVersion: {
                             id: appVersion.id
                         }
                     }

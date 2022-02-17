@@ -9,8 +9,8 @@ type Query {
 }
 type Mutation {
   # Allow report creation
-  createPartialReport(input: PartialReport): String
-
+  createPartialReport(report: String): String
+ 
   createApplication(appName: String): Application
   updateApplication(appId: ID, appName: String): Application
   deleteApplication(appId: ID): Application

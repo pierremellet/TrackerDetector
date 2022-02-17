@@ -75,6 +75,10 @@ export class UnknowcookiesComponent implements OnInit {
 
   }
 
+  secondsToMinutes(sec: number) : number {
+    return Math.trunc(sec / 60)
+  }
+
   update(appId: any) {
     const query = `{
       findApplication(id: ${appId}){
@@ -86,6 +90,7 @@ export class UnknowcookiesComponent implements OnInit {
               id
               name
               domain
+              duration
               pageURL
             }
           }

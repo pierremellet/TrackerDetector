@@ -16,24 +16,11 @@ const openDashboad = async () => {
  * @param {*} endpoint 
  */
 const postReport = async (report, endpoint) => {
-    const cookieToGQLString = (c) => `
-    {
-        name: "${c.name}"
-        domain: "${c.domain}"
-        path : "${c.path}"
-        httpOnly : ${c.httpOnly}
-        secure : ${c.secure}
-        hostOnly: ${c.hostOnly}
-        session : ${c.session}
-      }
-    `;
+     
     const queyString = `
-    mutation {
-        createPartialReport(input: {
-          pageURL : "${report.pageURL}"
-          cookies : [${report.cookies.map(c => cookieToGQLString(c)).join(',')}]
-        })
-      }
+    mutation{
+        createPartialReport(report: "${btoa(JSON.stringify(report))}")
+    }
     `;
 
 
@@ -42,7 +29,7 @@ const postReport = async (report, endpoint) => {
         "operationName": null,
         "variables": {}
     }
-    console.log(endpoint);
+    console.log(graphqlQuery);
     return fetch(endpoint, {
         method: "POST",
         headers: {
@@ -60,37 +47,7 @@ chrome.alarms.onAlarm.addListener(async a => {
     await updateConfiguration();
 });
 
-/**
- * Collect cookies from tabId
- * @param {*} tabId 
- * @returns a list of cookies
- */
-const collectCookies = async (tabId) => {
-    const data = await chrome.scripting.executeScript({
-        target: { tabId: tabId },
-        func: () => performance.getEntries().map(e => e.name),
-    });
 
-    if (chrome.runtime.lastError || !data || !data[0]) return;
-    const urls = data[0].result.map(url => url.split(/[#?]/)[0]);
-    const uniqueUrls = [...new Set(urls).values()].filter(Boolean).filter(u => u.startsWith('https'));
-
-    const results = await Promise.all(
-        uniqueUrls.map(url =>
-            new Promise(resolve => {
-                chrome.cookies.getAll({ url }, resolve);
-            })
-        )
-    )
-    const cookies = [
-        ...new Map(
-            [].concat(...results)
-                .map(c => [JSON.stringify(c), c])
-        ).values()
-    ];
-
-    return cookies;
-}
 
 /**
  * Collect cookies from tabId
@@ -120,26 +77,45 @@ const collectCookiesWithContext = async (tabId) => {
                     resolve({
                         "url": uwi.url,
                         "initiator": uwi.initiator,
-                        "cookies": res
+                        "cookies": res.map(c => {
+                            c.timestamp = (new Date()).getTime();
+                            return c;
+                        })
                     })
                 });
             })
         )
     )
 
-    const cookies = results.flatMap(uwi => uwi.cookies);
-    const uniqueCookies = cookies.filter((v,i,a)=>a.findIndex(t=>(t.name===v.name))===i)
-    const expanded = uniqueCookies.map(cookie => {
-        const uwis = results.filter(uwi => uwi.cookies.findIndex(c => c.name == cookie.name)>=0).map(u => {return {url: u.url, initiator: u.initiator}});
-        return {
-            "cookie" : cookie,
-            "urls" : uwis
+    var context = results.filter(c => c.cookies.length > 0).map((v, i) => {
+        v['id'] = i;
+        return v;
+    });
+
+    var dedupContext = [];
+    context.forEach(c => {
+        if (dedupContext.findIndex(e => e.url == c.url && e.initiator == c.initiator) == -1) {
+            dedupContext.push(c);
         }
     })
 
-    console.log(expanded);
+    const cookies = dedupContext.flatMap(uwi => uwi.cookies);
+    const uniqueCookies = cookies.filter((v, i, a) => a.findIndex(t => (t.name === v.name)) === i)
+    var expanded = uniqueCookies.map(cookie => {
+        return {
+            "cookie": cookie,
+            "contextIds": dedupContext.filter(dc => dc.cookies.findIndex(c => c.name == cookie.name) > -1).map(dc => dc.id)
+        }
+    })
 
-    return results;
+    const result = {
+        contexts : dedupContext.map(d => { return { id: d.id, url: d.url, initiator: d.initiator } }),
+        cookies : expanded
+    }
+
+ 
+
+    return result;
 }
 
 
@@ -176,27 +152,16 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         && settings.domains.findIndex(dom => sender.url.includes(dom)) != -1
     ) {
 
-        const test = await collectCookiesWithContext(sender.tab.id);
-        console.log(test);
-        const cookies = (await collectCookies(sender.tab.id)).map(c => {
-
-            return {
-                "timestamp": (new Date()).getTime(),
-                "name": c.name,
-                "domain": c.domain,
-                "duration": c.expirationDate,
-                "path": c.path,
-                "httpOnly": c.httpOnly,
-                "hostOnly": c.hostOnly,
-                "secure": c.secure,
-                "session": c.session
-            };
-        });
+        const cwc = await collectCookiesWithContext(sender.tab.id);
+        
 
         const trackingReport = {
             pageURL: sender.url,
-            cookies: cookies
+            cookies: cwc.cookies,
+            contexts: cwc.contexts,
         }
+
+        console.log(trackingReport);
         const endpoint = await getRemoteEndpoint();
         await postReport(trackingReport, endpoint);
     }

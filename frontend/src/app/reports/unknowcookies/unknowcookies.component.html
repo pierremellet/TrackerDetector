@@ -43,6 +43,9 @@
                                             <b>Name : {{c.name}}</b>
                                             <br />
                                             <i>Domain : {{c.domain}}</i>
+                                            <br />
+                                            <i *ngIf="c.duration !== 0">Expiration : {{secondsToMinutes(c.duration)}} min</i>
+                                            <i *ngIf="c.duration == 0">Expiration : Session</i>
         
                                             <div class="btn-group dropend float-end">
                                                 <button type="button" class="btn btn-secondary dropdown-toggle"

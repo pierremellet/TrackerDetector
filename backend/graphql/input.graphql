@@ -11,22 +11,8 @@ input CookieTemplateInput {
   disabled: Boolean
   category: Int 
 }
-input CookieInstanceContext {
-  url: String
-  initiator: String
-}
-input CookieInstanceInput {
-  name: String!
-  domain: String
-  path: String
-  httpOnly: Boolean
-  hostOnly: Boolean
-  secure: Boolean
-  session: Boolean
-  timetamp: Int
-  contexts: [CookieInstanceContext!]
+ 
 
-}
 input URLInput {
   id: ID
   path: String
@@ -41,7 +27,7 @@ input ApplicationVersionInput {
   urls: [URLInput!]!
   cookies: [CookieTemplateInput!]!
 }
-input PartialReport {
-  pageURL: String!
-  cookies: [CookieInstanceInput!]!
-}
+
+ 
+ 
+ 

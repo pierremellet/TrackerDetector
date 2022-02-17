@@ -89,5 +89,6 @@ type CookieInstance {
   secure: Boolean
   session: Boolean
   timestamp: Int
+  duration: Float
   pageURL: String
 }
