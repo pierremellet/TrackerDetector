@@ -29,7 +29,8 @@ export class DriftCookie {
         public appId: number,
         public versionId: number,
         public url: string,
-        public cookie: TrackedCookie
+        public cookie: TrackedCookie,
+        public ressourceURLs : string[],
     ) { }
 
 }

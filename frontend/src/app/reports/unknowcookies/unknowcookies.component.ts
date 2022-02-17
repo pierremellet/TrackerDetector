@@ -4,6 +4,7 @@ import { GraphQLService } from 'src/app/graph-ql.service';
 import { CookieCategories } from 'src/app/model';
 import { ToastService } from 'src/app/toast.service';
 
+declare var bootstrap: any;
 @Component({
   selector: 'app-unknowcookies',
   templateUrl: './unknowcookies.component.html',
@@ -15,6 +16,7 @@ export class UnknowcookiesComponent implements OnInit {
   public currentApplication: any | undefined;
   public currentApplicationId: number | undefined = undefined;
   public cookieCategories: CookieCategories[] = [];
+  currentURLs: string[] = [];
 
   constructor(public gql: GraphQLService, private toast: ToastService) { }
 
@@ -75,7 +77,7 @@ export class UnknowcookiesComponent implements OnInit {
 
   }
 
-  secondsToMinutes(sec: number) : number {
+  secondsToMinutes(sec: number): number {
     return Math.trunc(sec / 60)
   }
 
@@ -92,6 +94,7 @@ export class UnknowcookiesComponent implements OnInit {
               domain
               duration
               pageURL
+              ressourceURLs
             }
           }
         }
@@ -118,6 +121,12 @@ export class UnknowcookiesComponent implements OnInit {
 
     return res;
 
+  }
+
+  openModal(urls: string[]) {
+    this.currentURLs = urls;
+    const modal = new bootstrap.Modal(document.getElementById('modal'));
+    modal.toggle();
   }
 
   cleanUp(version: any) {

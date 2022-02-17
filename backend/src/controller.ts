@@ -82,6 +82,7 @@ export class TrackerFinderController {
                         timestamp: new Date().getTime(),
                         duration: duration,
                         pageURL: drift.url,
+                        ressourceURLs : drift.ressourceURLs,
                         applicationVersion: {
                             connect: {
                                 id: drift.versionId,
@@ -124,11 +125,13 @@ export class TrackerFinderController {
                                 }
                             );
                             if (!match) {
+                                const urls = cookieInstance.contextIds.map(id => reportAndVersion.report.contexts.filter(c => c.id == id)).flatMap(x => x);
                                 topics.driftCookiesSubject.next({
                                     appId: version.application.id,
                                     versionId: version.id,
                                     url: reportAndVersion.report.pageURL,
                                     cookie: cookieInstance.cookie,
+                                    ressourceURLs : urls.map(c => c.url)
                                 });
                             }
                         });
