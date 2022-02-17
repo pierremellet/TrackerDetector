@@ -18,7 +18,7 @@ import { UnknowcookiesComponent } from './reports/unknowcookies/unknowcookies.co
 import { SettingsComponent } from './settings/settings.component';
 import { CookieCategoriesComponent } from './settings/cookie-categories/cookie-categories.component';
 import { DomainsComponent } from './settings/domains/domains.component';
-import { PixelEditComponent } from './version-edit/pixel-edit/pixel-edit.component';
+import { PixeltemplateListComponent } from './version-edit/pixeltemplate-list/pixeltemplate-list.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +36,7 @@ import { PixelEditComponent } from './version-edit/pixel-edit/pixel-edit.compone
     SettingsComponent,
     CookieCategoriesComponent,
     DomainsComponent,
-    PixelEditComponent
+    PixeltemplateListComponent
   ],
   imports: [
     AppRoutingModule,

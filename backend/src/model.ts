@@ -7,6 +7,11 @@ export class PartialReport {
 
 }
 
+export enum URLType {
+    EXACT = "EXACT",
+    PREFIX = "PREFIX"
+}
+
 export class DriftCookie {
     constructor( 
         public appId: number,

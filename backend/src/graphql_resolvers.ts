@@ -17,17 +17,26 @@ export default class GraphqlAPI {
 
         this.resolvers = {
             Mutation: {
+                updatePixelTemplate: async (_: any, params: any): Promise<any> => {
+                    return await this.controller.applicationVersionController.updatePixelTemplate(parseInt(params.pixelTemplateId, 10), params.uri, params.type);
+                },
+                createPixelTemplate: async (_: any, params: any): Promise<any> => {
+                    return await this.controller.applicationVersionController.createPixelTemplate(params.uri, params.type, parseInt(params.versionId, 10));
+                },
+                deletePixelTemplate: async (_: any, params: any): Promise<any> => {
+                    return await this.controller.applicationVersionController.deletePixelTemplate(parseInt(params.pixelTemplateId, 10));
+                },
                 createDomain: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.createDomain(params.domainName);
+                    return await this.controller.domainController.createDomain(params.domainName);
                 },
                 updateDomain: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.updateDomain(parseInt(params.domainId, 10), params.domainName, params.domainEnable);
+                    return await this.controller.domainController.updateDomain(parseInt(params.domainId, 10), params.domainName, params.domainEnable);
                 },
                 createCookieCategory: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.createCookieCategory(params.name);
+                    return await this.controller.cookieCategoryController.createCookieCategory(params.name);
                 },
                 updateCookieCategory: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.updateCookieCategory(parseInt(params.cookieCategoryId, 10), params.cookieCategoryName, params.cookieCategoryEnable);
+                    return await this.controller.cookieCategoryController.updateCookieCategory(parseInt(params.cookieCategoryId, 10), params.cookieCategoryName, params.cookieCategoryEnable);
                 },
                 convertCookieInstanceToTemplate: async (_: any, params: any): Promise<any> => {
                     return await this.controller.convertCookieInstanceToTemplate(parseInt(params.versionId, 10), parseInt(params.cookieCategoryId, 10), parseInt(params.cookieInstanceId, 10));
@@ -42,13 +51,13 @@ export default class GraphqlAPI {
                     return await this.controller.applicationController.deleteApplication(parseInt(params.appId, 10));
                 },
                 updateApplicationVersion: async (_: any, params: any) => {
-                    return await this.controller.updateApplicationVersion(params.version);
+                    return await this.controller.applicationVersionController.updateApplicationVersion(params.version);
                 },
                 deleteApplicationVersion: async (_: any, params: any) => {
                     return await this.controller.deleteApplicationVersion(parseInt(params.versionId, 10));
                 },
                 createApplicationVersion: async (_: any, params: any) => {
-                    return await this.controller.createApplicationVersion(parseInt(params.appId, 10), params.versionName);
+                    return await this.controller.applicationVersionController.createApplicationVersion(parseInt(params.appId, 10), params.versionName);
                 },
                 createPartialReport: (_: any, params: any) => {
                     topics.rawPartialReportSubject.next(params.input);
@@ -82,15 +91,15 @@ export default class GraphqlAPI {
             Configuration: {
                 domains: async (appVersion: any, args: any) => {
                     return this.prisma.domain.findMany({
-                        orderBy : {
-                            name : "asc"
+                        orderBy: {
+                            name: "asc"
                         }
                     });
                 },
                 cookieCategories: async (appVersion: any, args: any) => {
                     return this.prisma.cookieCategory.findMany({
                         orderBy: {
-                            name : "asc"
+                            name: "asc"
                         }
                     });
                 }
@@ -114,12 +123,19 @@ export default class GraphqlAPI {
                             id: appVersion.id
                         }
                     },
-                    select:{
-                        domain:true,
-                        id:true,
+                    select: {
+                        domain: true,
+                        id: true,
                         path: true,
                         type: true,
                         created: true
+                    }
+                }),
+                pixels: (appVersion: any) => prisma.pixelTemplate.findMany({
+                    where : {
+                        applicationVersion : {
+                            id: appVersion.id
+                        }
                     }
                 }),
                 cookies: (appVersion: any) => prisma.cookieTemplate.findMany({
@@ -128,7 +144,7 @@ export default class GraphqlAPI {
                             id: appVersion.id
                         }
                     },
-                    select : {
+                    select: {
                         domain: true,
                         hostOnly: true,
                         id: true,
@@ -139,7 +155,6 @@ export default class GraphqlAPI {
                         nameRegex: true,
                         path: true
                     }
-                
                 })
             },
             Application: {

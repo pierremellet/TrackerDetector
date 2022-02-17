@@ -4,10 +4,19 @@ export type Domain = {
   enable: boolean
 }
 
+export type DisablableItem = {
+  enable: boolean
+}
+
 export type CookieCategories = {
   id: number,
-  name: string,
-  enable: boolean
+  name: string
+} & DisablableItem
+
+export type PixelTemplate = {
+  id?: number,
+  uri: string,
+  type: string
 }
 
 export type ApplicationVersion = {

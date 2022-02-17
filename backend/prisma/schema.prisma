@@ -21,12 +21,13 @@ model Application_Version {
   urls                  Application_URL[]
   cookieTemplates       CookieTemplate[]
   unknowCookieInstances CookieInstance[]
+  pixelTemplates        PixelTemplate[]
   enable                Boolean           @default(true)
 
   @@unique([name, applicationId])
 }
 
-enum Application_URL_Type {
+enum URL_Type {
   PREFIX
   EXACT
 }
@@ -34,7 +35,7 @@ enum Application_URL_Type {
 model Application_URL {
   id                   Int                  @id @default(autoincrement())
   path                 String
-  type                 Application_URL_Type
+  type                 URL_Type
   applicationVersion   Application_Version? @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
   applicationVersionId Int?
   domain               Domain               @relation(fields: [domainId], references: [id], onDelete: Cascade)
@@ -62,6 +63,16 @@ model Domain {
   name            String            @unique
   enable          Boolean
   applicationURLs Application_URL[]
+}
+
+model PixelTemplate {
+  id                   Int                 @id @default(autoincrement())
+  uri                  String
+  type                 URL_Type
+  applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
+  applicationVersionId Int
+
+  @@unique([type, uri, applicationVersionId])
 }
 
 model CookieTemplate {
