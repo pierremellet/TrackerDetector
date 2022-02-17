@@ -11,6 +11,10 @@ input CookieTemplateInput {
   disabled: Boolean
   category: Int 
 }
+input CookieInstanceContext {
+  url: String
+  initiator: String
+}
 input CookieInstanceInput {
   name: String!
   domain: String
@@ -20,6 +24,8 @@ input CookieInstanceInput {
   secure: Boolean
   session: Boolean
   timetamp: Int
+  contexts: [CookieInstanceContext!]
+
 }
 input URLInput {
   id: ID

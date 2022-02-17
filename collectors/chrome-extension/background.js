@@ -92,6 +92,56 @@ const collectCookies = async (tabId) => {
     return cookies;
 }
 
+/**
+ * Collect cookies from tabId
+ * @param {*} tabId 
+ * @returns a list of cookies
+ */
+const collectCookiesWithContext = async (tabId) => {
+    const data = await chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        func: () => performance.getEntries()
+            .filter(u => u.name.startsWith('https'))
+            .map(e => {
+                return {
+                    "url": e.name.split(/[#?]/)[0],
+                    "initiator": e.initiatorType
+                }
+            }),
+    });
+
+    if (chrome.runtime.lastError || !data || !data[0]) return;
+    const urlWithInitiator = data[0].result;
+
+    const results = await Promise.all(
+        urlWithInitiator.map(uwi =>
+            new Promise(resolve => {
+                chrome.cookies.getAll({ url: uwi.url }).then(res => {
+                    resolve({
+                        "url": uwi.url,
+                        "initiator": uwi.initiator,
+                        "cookies": res
+                    })
+                });
+            })
+        )
+    )
+
+    const cookies = results.flatMap(uwi => uwi.cookies);
+    const uniqueCookies = cookies.filter((v,i,a)=>a.findIndex(t=>(t.name===v.name))===i)
+    const expanded = uniqueCookies.map(cookie => {
+        const uwis = results.filter(uwi => uwi.cookies.findIndex(c => c.name == cookie.name)>=0).map(u => {return {url: u.url, initiator: u.initiator}});
+        return {
+            "cookie" : cookie,
+            "urls" : uwis
+        }
+    })
+
+    console.log(expanded);
+
+    return results;
+}
+
 
 /**
  * Open dashboard page on first activation
@@ -119,13 +169,15 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     const settings = await getLocalConfigurationData();
 
-console.log(settings);
+    console.log(settings);
     // If message is page-unload and current tag domain is inclued within configured domains
     if (
         message == "page-unload"
         && settings.domains.findIndex(dom => sender.url.includes(dom)) != -1
     ) {
 
+        const test = await collectCookiesWithContext(sender.tab.id);
+        console.log(test);
         const cookies = (await collectCookies(sender.tab.id)).map(c => {
 
             return {
