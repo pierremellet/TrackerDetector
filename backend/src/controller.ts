@@ -1,17 +1,18 @@
-import { Application, Application_URL, Application_Version, CookieCategory, CookieTemplate, Domain, PrismaClient, UnknowURL } from "@prisma/client";
-import { bufferTime, concatMap, filter, groupBy, map, mergeAll, mergeMap, Observable, of, switchMap, tap, windowCount, windowTime, } from "rxjs";
+import { Application, Application_URL, Application_Version, CookieTemplate, Domain, PrismaClient } from "@prisma/client";
+import { concatMap, map, switchMap, tap, windowTime, } from "rxjs";
 import rootLogger from "./logger";
-import { AppConfig } from "./utils";
-import { PartialReport, TrackedCookie } from "./model";
+import { AppConfig, b64reportToJSON, removeURLParams } from "./utils";
+import { PartialReport } from "./model";
 import topics from "./topics";
 import ApplicationController from "./controllers/application.controller";
 import { URL } from "url";
 import DomainController from "./controllers/domain.controller";
 import ApplicationVersionController from "./controllers/applicationVersion.controller";
 import CookieCategoryController from "./controllers/cookieCategory.controller";
+import config from "./config";
 
 export class TrackerFinderController {
-    private _log = rootLogger(this.config).getChildLogger({
+    private _log = rootLogger(config).getChildLogger({
         name: "TrackerFinderController",
     });
 
@@ -25,7 +26,7 @@ export class TrackerFinderController {
     public applicationVersionController: ApplicationVersionController;
     public cookieCategoryController: CookieCategoryController;
 
-    constructor(private config: AppConfig, private prisma: PrismaClient) {
+    constructor(private prisma: PrismaClient) {
 
         this.applicationController = new ApplicationController(config, prisma);
         this.domainController = new DomainController(config, prisma);
@@ -68,7 +69,7 @@ export class TrackerFinderController {
 
     private handleDriftCookies() {
         topics.driftCookiesSubject.subscribe((drift) => {
-            var duration = drift.cookie.expirationDate ?  drift.cookie.expirationDate - ((new Date().getTime())/1000) : 0;
+            var duration = drift.cookie.expirationDate ? drift.cookie.expirationDate - ((new Date().getTime()) / 1000) : 0;
             this.prisma.cookieInstance
                 .create({
                     data: {
@@ -82,7 +83,7 @@ export class TrackerFinderController {
                         timestamp: new Date().getTime(),
                         duration: duration,
                         pageURL: drift.url,
-                        ressourceURLs : drift.ressourceURLs.map(x => JSON.stringify(x)),
+                        ressourceURLs: drift.ressourceURLs.map(x => JSON.stringify(x)),
                         applicationVersion: {
                             connect: {
                                 id: drift.versionId,
@@ -131,7 +132,7 @@ export class TrackerFinderController {
                                     versionId: version.id,
                                     url: reportAndVersion.report.pageURL,
                                     cookie: cookieInstance.cookie,
-                                    ressourceURLs : urls
+                                    ressourceURLs: urls
                                 });
                             }
                         });
@@ -141,20 +142,14 @@ export class TrackerFinderController {
     }
 
 
-    private b64reportToJSON(b64: any): PartialReport {
-        const buffer = Buffer.from(b64, 'base64');
-        const stringReport = buffer.toString('ascii');
-        return JSON.parse(stringReport);
-    }
-
     private handleIncommingReports(config: AppConfig) {
         topics.rawPartialReportSubject
             .pipe(
-                map(this.b64reportToJSON),
+                map(b64reportToJSON),
                 tap((report) =>
                     this._log.debug(`Partial report received for URL : ${report.pageURL}`)
                 ),
-                map(this.removeURLParams)
+                map(removeURLParams)
             )
             .subscribe((sanitizedReport) => {
                 topics.sanitizedPartialReportSubject.next(sanitizedReport);
@@ -180,39 +175,6 @@ export class TrackerFinderController {
             this._URLPrefixIndex = urls;
             this._log.debug(`Version cache updated`);
         });
-    }
-
-    public deleteCookieInstancesForVersion(versionID: number): Promise<number> {
-        return this.prisma.cookieInstance
-            .deleteMany({
-                where: {
-                    applicationVersion: {
-                        id: versionID,
-                    },
-                },
-            })
-            .then((res) => res.count);
-    }
-
-    /*
-    private dedupCookies(group: Observable<PartialReport>): TrackedCookie[] {
-        const cookies: TrackedCookie[] = [];
-        group.forEach((report) => {
-            report.cookies.forEach((cookie) => {
-                if (cookies.findIndex((c) => c.name === cookie.name) === -1) {
-                    cookies.push(cookie);
-                }
-            });
-        });
-        return cookies;
-    }*/
-
-    private removeURLParams(report: PartialReport): PartialReport {
-        const paramStartPost = report.pageURL.indexOf("?");
-        if (paramStartPost !== -1) {
-            report.pageURL = report.pageURL.substring(0, paramStartPost);
-        }
-        return report;
     }
 
     async convertCookieInstanceToTemplate(versionId: number, categoryId: number, cookieInstanceId: number) {

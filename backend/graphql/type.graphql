@@ -7,7 +7,7 @@ type Domain {
   name: String
   enable: Boolean
 }
-type CookieCategory{
+type CookieCategory {
   id: ID
   name: String
   enable: Boolean
@@ -21,7 +21,6 @@ type PixelTemplate {
 
 "Configuration of tracked application"
 type Application {
-
   "Unique Tech ID"
   id: ID
 
@@ -40,12 +39,10 @@ enum ApplicationURLType {
   EXACT
 }
 
-
-
 scalar Date
 
 # URL Inconnue
-type UnknowURL{
+type UnknowURL {
   id: ID
   url: String
   created: Date
@@ -92,10 +89,21 @@ type CookieInstance {
   duration: Float
   pageURL: String
   ressourceURLs: [Context]
+  information: CookieInstanceExtInformation
+}
+type CookieInstanceExtInformation {
+  platform: String
+  category: String
+  domain: String
+  description: String
+  retentionPeriod: String
+  dataController: String
+  gdpr: String
+  wildcardMatch: String
 }
 
 type Context {
   id: ID
-  url : String
-  initiator : String
+  url: String
+  initiator: String
 }

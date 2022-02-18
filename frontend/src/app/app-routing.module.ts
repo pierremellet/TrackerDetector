@@ -15,7 +15,7 @@ const routes: Routes = [
   { path: 'applications/:id', component: ApplicationEditComponent },
   { path: 'applications/:appId/versions/:verId', component: VersionEditComponent },
   {
-    path: 'reports', component: ReportsComponent, children: [
+    path: 'analysis', component: ReportsComponent, children: [
       { path: '', redirectTo: 'applications', pathMatch: 'full' },
       {
         path: 'unknowcookies',

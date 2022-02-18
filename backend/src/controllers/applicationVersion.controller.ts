@@ -148,11 +148,23 @@ export default class ApplicationVersionController {
         });
     }
 
-    async deleteApplicationVersion(versionId: number): Promise<Application_Version> {
+    public async deleteApplicationVersion(versionId: number): Promise<Application_Version> {
         return this.prisma.application_Version.delete({
             where: {
                 id: versionId
             }
         })
+    }
+
+    public deleteCookieInstancesForVersion(versionID: number): Promise<number> {
+        return this.prisma.cookieInstance
+            .deleteMany({
+                where: {
+                    applicationVersion: {
+                        id: versionID,
+                    },
+                },
+            })
+            .then((res) => res.count);
     }
 }

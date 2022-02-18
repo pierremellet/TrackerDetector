@@ -5,13 +5,14 @@ import { AppConfig, extractHostname } from "./utils";
 import * as fs from 'fs';
 import topics from './topics';
 import * as path from 'path';
-
+import config from "./config";
+import { findCookieInformationByName } from "./extCookieDatabase";
 export default class GraphqlAPI {
 
     public typeDefs: any[];
     public resolvers: any;
 
-    constructor(protected config: AppConfig, protected pubsub: PubSub, protected prisma: PrismaClient, protected controller: TrackerFinderController) {
+    constructor(protected pubsub: PubSub, protected prisma: PrismaClient, protected controller: TrackerFinderController) {
 
         this.typeDefs = importSchema(config.graphql_schema_dir);
 
@@ -42,7 +43,7 @@ export default class GraphqlAPI {
                     return await this.controller.convertCookieInstanceToTemplate(parseInt(params.versionId, 10), parseInt(params.cookieCategoryId, 10), parseInt(params.cookieInstanceId, 10));
                 },
                 deleteCookieInstancesForVersion: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.deleteCookieInstancesForVersion(parseInt(params.versionId, 10));
+                    return await this.controller.applicationVersionController.deleteCookieInstancesForVersion(parseInt(params.versionId, 10));
                 },
                 updateApplication: async (_: any, params: any): Promise<any> => {
                     return await this.controller.applicationController.updateApplication(parseInt(params.appId, 10), params.appName);
@@ -159,6 +160,22 @@ export default class GraphqlAPI {
                         path: true
                     }
                 })
+            },
+            CookieInstance: {
+                information: (cookieInstance: any) =>  {
+                    return findCookieInformationByName(cookieInstance.name).then(c => {
+                        return {
+                            platform: c?.Platform,
+                            category: c?.Category,
+                            domain: c?.Domain,
+                            description: c?.Description,
+                            retentionPeriod: c?.["Retention period"],
+                            dataController: c?.["Data Controller"],
+                            gdpr: c?.["User Privacy & GDPR Rights Portals"],
+                            wildcardMatch: c?.["Wildcard match"]
+                        }
+                    })
+                }
             },
             Application: {
                 versions: (application: any, args: any) => {

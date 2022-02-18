@@ -45,11 +45,12 @@
                                         <ul class="list-group">
                                             <li class="list-group-item" [class.hide]="c.hide"
                                                 *ngFor="let c of group.value; let i2 = index">
-                                                <b>Name : {{c.name}}</b>
-                                                <br />
-                                                <i>Domain : {{c.domain}}</i>
-                                                <br />
-                                                <i *ngIf="c.duration !== 0">Expiration :
+                                                <img class="position-absolute top-0 end-0" style="height: 2rem; margin-right: 0.5rem; margin-top: 0.5rem;" [src]="logoService.findCompanyLogoURL(c.information.platform)" />
+                                                <b class="cookie-field">Name : {{c.name}}</b>                                                
+                                                <i class="cookie-field">Domain : {{c.domain}}</i>                                                
+                                                <i class="cookie-field" *ngIf="c.information.description">Description : {{c.information.description}}</i>                                                 
+                                                <i class="cookie-field" *ngIf="c.information.category">Suggested Category : {{c.information.category}}</i>                                                
+                                                <i class="cookie-field" *ngIf="c.duration !== 0">Expiration :
                                                     {{secondsToMinutes(c.duration)}} min</i>
                                                 <i *ngIf="c.duration == 0">Expiration : Session</i>
 
@@ -58,7 +59,7 @@
                                                 <div class="btn-group dropend float-end">
 
                                                     <button class="btn btn-primary"
-                                                        (click)="openModal(c.ressourceURLs)">Used By</button>
+                                                        (click)="openModal(c.ressourceURLs)">Used by ressources ...</button>
                                                     <button type="button" class="btn btn-secondary dropdown-toggle"
                                                         data-bs-toggle="dropdown" aria-expanded="false">
                                                         Convert To Template
@@ -82,6 +83,9 @@
                 </div>
             </div>
         </div>
+
+
+        <a href="https://clearbit.com">Logos provided by Clearbit</a>
     </div>
 </div>
 
@@ -97,13 +101,12 @@
             <div class="modal-body">
                 <ul class="list-group">
                     <li class="list-group-item" *ngFor="let ctx of currentURLs">
-                        <i class="bi "
-                        [class.bi-send]="ctx.initiator == 'xmlhttprequest'"
-                        [class.bi-card-image]="ctx.initiator == 'img'"
-                        [class.bi-filetype-css]="ctx.initiator == 'css'"
-                        [class.bi-filetype-html]="ctx.initiator == 'navigation'"
-                        [class.bi-link]="ctx.initiator == 'link'"
-                        [class.bi-code-slash]="ctx.initiator == 'script'"></i> {{ctx.url}}
+                        <i class="bi " [class.bi-send]="ctx.initiator == 'xmlhttprequest'"
+                            [class.bi-card-image]="ctx.initiator == 'img'"
+                            [class.bi-filetype-css]="ctx.initiator == 'css'"
+                            [class.bi-filetype-html]="ctx.initiator == 'navigation'"
+                            [class.bi-link]="ctx.initiator == 'link'"
+                            [class.bi-code-slash]="ctx.initiator == 'script'"></i> {{ctx.url}}
                     </li>
                 </ul>
             </div>

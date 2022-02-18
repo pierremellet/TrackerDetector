@@ -9,14 +9,11 @@ import { createServer } from 'http';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import yaml from 'js-yaml';
-import fs from 'fs';
-import { AppConfig } from './utils';
 import GQLSetup from './graphql_resolvers';
+ import config from './config';
 class App {
 
-  private config: AppConfig = yaml.load(fs.readFileSync('config/config.yml', 'utf8')) as AppConfig;
-  private _log = rootLogger(this.config).getChildLogger({ name: "TrackerFinderController" });
+  private _log = rootLogger(config).getChildLogger({ name: "TrackerFinderController" });
 
   async start() {
 
@@ -24,9 +21,9 @@ class App {
 
     const prisma = new PrismaClient();
 
-    const controller = new TrackerFinderController(this.config, prisma);
-
-    const gqlController = new GQLSetup(this.config, pubsub, prisma, controller);
+    const controller = new TrackerFinderController(prisma);
+ 
+    const gqlController = new GQLSetup(pubsub, prisma, controller);
     const typeDefs = gqlController.typeDefs;
     const resolvers = gqlController.resolvers;
 
@@ -47,7 +44,7 @@ class App {
     }));
 
     const ws = createServer(app);
-    const server = ws.listen(this.config.port, () => {
+    const server = ws.listen(config.port, () => {
       new SubscriptionServer(
         {
           execute,
@@ -60,8 +57,8 @@ class App {
         },
       );
 
-      this._log.info(`🚀 Server Sub ready at ws://localhost:${this.config.port}/graphql`);
-      this._log.info(`🚀 Server ready at http://localhost:${this.config.port}/graphql`);
+      this._log.info(`🚀 Server Sub ready at ws://localhost:${config.port}/graphql`);
+      this._log.info(`🚀 Server ready at http://localhost:${config.port}/graphql`);
 
     });
 

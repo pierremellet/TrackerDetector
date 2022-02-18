@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { map } from 'rxjs';
 import { GraphQLService } from 'src/app/graph-ql.service';
+import { LogoService } from 'src/app/logo.service';
 import { CookieCategories } from 'src/app/model';
 import { ToastService } from 'src/app/toast.service';
 
@@ -18,7 +19,7 @@ export class UnknowcookiesComponent implements OnInit {
   public cookieCategories: CookieCategories[] = [];
   currentURLs: any[] = [];
 
-  constructor(public gql: GraphQLService, private toast: ToastService) { }
+  constructor(public gql: GraphQLService, private toast: ToastService, public logoService : LogoService) { }
 
   ngOnInit(): void {
     const allApplicationsQuery = `{
@@ -97,6 +98,14 @@ export class UnknowcookiesComponent implements OnInit {
               ressourceURLs {
                 url
                 initiator
+              }
+              information {
+                platform
+                category
+                retentionPeriod
+                description 
+                dataController
+                gdpr
               }
             }
           }
