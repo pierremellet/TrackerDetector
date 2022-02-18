@@ -74,6 +74,8 @@ type CookieTemplate {
   secure: Boolean
   session: Boolean
   disabled: Boolean
+  expiration: String
+  description: String
   category: CookieCategory!
 }
 type CookieInstance {

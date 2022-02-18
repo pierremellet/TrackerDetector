@@ -157,6 +157,8 @@ export default class GraphqlAPI {
                         session: true,
                         category: true,
                         nameRegex: true,
+                        description: true,
+                        expiration: true,
                         path: true
                     }
                 })

@@ -34,7 +34,7 @@ const updateExtCookieDatabase = () => {
         });
     })
 }
-
+updateExtCookieDatabase();
 const job = new CronJob('*/5 * * * *', updateExtCookieDatabase);
 job.start();
 

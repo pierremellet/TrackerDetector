@@ -113,6 +113,8 @@ export class VersionEditComponent implements OnInit {
             hostOnly
             secure
             session
+            description
+            expiration
             category{
               id
               name

@@ -49,7 +49,8 @@
                                                 <b class="cookie-field">Name : {{c.name}}</b>                                                
                                                 <i class="cookie-field">Domain : {{c.domain}}</i>                                                
                                                 <i class="cookie-field" *ngIf="c.information.description">Description : {{c.information.description}}</i>                                                 
-                                                <i class="cookie-field" *ngIf="c.information.category">Suggested Category : {{c.information.category}}</i>                                                
+                                                <i class="cookie-field" *ngIf="c.information.category">Suggested Category : {{c.information.category}}</i>                                               
+                                                <i class="cookie-field" *ngIf="c.information.gdpr"><a [href]="c.information.gdpr" >GDPR Policy</a></i>                                                 
                                                 <i class="cookie-field" *ngIf="c.duration !== 0">Expiration :
                                                     {{secondsToMinutes(c.duration)}} min</i>
                                                 <i *ngIf="c.duration == 0">Expiration : Session</i>

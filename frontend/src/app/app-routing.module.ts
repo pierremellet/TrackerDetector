@@ -22,6 +22,10 @@ const routes: Routes = [
         component: UnknowcookiesComponent,
       },
       {
+        path: 'unknowcookies/:appId',
+        component: UnknowcookiesComponent,
+      },
+      {
         path: 'unknowurls',
         component: UnknowurlsComponent,
       },

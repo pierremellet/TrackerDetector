@@ -16,6 +16,9 @@ export class LogoService {
       "facebook": "https://logo.clearbit.com/facebook.com",
       "amazon": "https://logo.clearbit.com/amazon.com",
       "oracle": "https://logo.clearbit.com/oracle.com",
+      "youtube": "https://logo.clearbit.com/youtube.com",
+      "bing": "https://logo.clearbit.com/bing.com",
+      "twitter": "https://logo.clearbit.com/twitter.com",
       "linkedin": "https://logo.clearbit.com/linkedin.com"
     }
 

@@ -10,6 +10,7 @@ import DomainController from "./controllers/domain.controller";
 import ApplicationVersionController from "./controllers/applicationVersion.controller";
 import CookieCategoryController from "./controllers/cookieCategory.controller";
 import config from "./config";
+import { findCookieInformationByName } from "./extCookieDatabase";
 
 export class TrackerFinderController {
     private _log = rootLogger(config).getChildLogger({
@@ -185,6 +186,9 @@ export class TrackerFinderController {
         });
 
         if (cookieInstance) {
+
+            const cookieInformation = await findCookieInformationByName(cookieInstance.name);
+
             return this.prisma.cookieTemplate.create({
                 data: {
                     category: {
@@ -199,6 +203,8 @@ export class TrackerFinderController {
                     secure: cookieInstance.secure,
                     httpOnly: cookieInstance.httpOnly,
                     session: cookieInstance.session,
+                    description : cookieInformation?.Description,
+                    expiration : cookieInformation?.["Retention period"],
                     applicationVersion: {
                         connect: {
                             id: versionId,

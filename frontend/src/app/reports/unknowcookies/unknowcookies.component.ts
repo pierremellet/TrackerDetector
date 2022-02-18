@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 import { GraphQLService } from 'src/app/graph-ql.service';
 import { LogoService } from 'src/app/logo.service';
@@ -17,11 +18,21 @@ export class UnknowcookiesComponent implements OnInit {
   public currentApplication: any | undefined;
   public currentApplicationId: number | undefined = undefined;
   public cookieCategories: CookieCategories[] = [];
-  currentURLs: any[] = [];
+  public currentURLs: any[] = [];
 
-  constructor(public gql: GraphQLService, private toast: ToastService, public logoService : LogoService) { }
+  constructor(private route: ActivatedRoute, public gql: GraphQLService, private toast: ToastService, public logoService: LogoService, public router: Router) { }
 
   ngOnInit(): void {
+    console.log(this.route.snapshot.paramMap);
+    const appId = this.route.snapshot.paramMap.get('appId');
+    this.initAppSelect();
+
+    if (appId) {
+      this.update(appId);
+    }
+  }
+
+  initAppSelect(): void {
     const allApplicationsQuery = `{
       allApplications{
         id
@@ -83,6 +94,7 @@ export class UnknowcookiesComponent implements OnInit {
   }
 
   update(appId: any) {
+    this.currentApplicationId = appId;
     const query = `{
       findApplication(id: ${appId}){
         versions {
@@ -160,6 +172,7 @@ export class UnknowcookiesComponent implements OnInit {
 
     const appId = event.target.value as number;
 
+    this.router.navigate(["analysis", "unknowcookies", appId]);
     this.update(appId);
   }
 

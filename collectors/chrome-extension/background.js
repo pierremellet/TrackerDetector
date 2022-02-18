@@ -79,6 +79,7 @@ const collectCookiesWithContext = async (tabId) => {
                         "initiator": uwi.initiator,
                         "cookies": res.map(c => {
                             c.timestamp = (new Date()).getTime();
+                            c.value = undefined;
                             return c;
                         })
                     })
