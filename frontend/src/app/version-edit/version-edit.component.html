@@ -104,7 +104,7 @@
         <div class="card  ">
             <div class="card-body">
                 <div class="card-text ">
-                    <h3 class=" ">Cookie Templates
+                    <h3>Cookie Templates
                         <button class="btn btn-primary btn-sm float-end bi bi-plus-lg " (click)="addCookie()"> </button>
                     </h3>
                     <div>
@@ -112,8 +112,9 @@
                             role="alert">
                             No cookies, click '+' to add one
                         </div>
-                        <div *ngIf="version.cookies.length > 0">
-                            <div *ngFor="let cookie of version.cookies" [class.d-none]="cookie.disabled">
+                        <div *ngIf="version.cookies.length > 0" class="list-group list-group-flush">
+                            <div *ngFor="let cookie of version.cookies" class="list-group-item"
+                                [class.d-none]="cookie.disabled">
                                 <div class="row">
                                     <div class="form-group col-md-2 fw-bold">
                                         Name (Regex)
@@ -143,7 +144,8 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group col-md-2">
-                                        <input [(ngModel)]="cookie.nameRegex" type="text" class="form-control text-success fw-bold">
+                                        <input [(ngModel)]="cookie.nameRegex" type="text"
+                                            class="form-control text-success fw-bold">
                                     </div>
                                     <div class="form-group col-md-2">
                                         <input [(ngModel)]="cookie.domain" type="text" class="form-control">
@@ -191,15 +193,14 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div>Description</div>
-                                        <textarea [(ngModel)]="cookie.description" class="form-control">blabla</textarea>
+                                        <textarea [(ngModel)]="cookie.description"
+                                            class="form-control">blabla</textarea>
                                     </div>
                                     <div class="col-md-4">
                                         <div>Expiration</div>
                                         <input [(ngModel)]="cookie.expiration" type="text" class="form-control">
                                     </div>
-                                </div> 
-                                <hr class="  mb-4">
-
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -212,7 +213,8 @@
         <div class="card">
             <div class="card-body">
                 <div class="card-text">
-                    <app-pixeltemplate-list [versionId]="version.id" [pixels]="version.pixels"></app-pixeltemplate-list>
+                    <app-pixeltemplate-list [versionId]="version.id" [pixels]="version.pixels">
+                    </app-pixeltemplate-list>
                 </div>
             </div>
         </div>
