@@ -52,17 +52,19 @@ export class TrackerFinderController {
                             created: new Date()
                         }
                     })
-                } catch (err) { }
+                } catch (err) { 
+                    this._log.trace(err);
+                }
             });
     }
 
-    private deduplicateURLs(deduplicate:  string[]): string[] {
+    private deduplicateURLs(deduplicate: string[]): string[] {
         return deduplicate;
     }
 
     private handleDriftCookies() {
         topics.driftCookiesSubject.subscribe((drift) => {
-            var duration = drift.cookie.expirationDate ? drift.cookie.expirationDate - ((new Date().getTime()) / 1000) : 0;
+            const duration = drift.cookie.expirationDate ? drift.cookie.expirationDate - ((new Date().getTime()) / 1000) : 0;
             this.prisma.cookieInstance
                 .create({
                     data: {
@@ -88,7 +90,9 @@ export class TrackerFinderController {
                     this._log.debug(
                         `Save drift Cookie for version id(${drift.versionId}), with id(${cookie.id}) and name(${cookie.name})`
                     );
-                }).catch(() => { });
+                }).catch((err) => {
+                    this._log.trace(err);
+                 });
         });
     }
 
@@ -134,8 +138,8 @@ export class TrackerFinderController {
             });
     }
 
-
-    private handleIncommingReports(config: AppConfig) {
+    // TODO : externaliser vers une solution externe (ex: Kafka)
+    private handleIncommingReports(c: AppConfig) {
         topics.rawPartialReportSubject
             .pipe(
                 map(b64reportToJSON),
@@ -143,16 +147,23 @@ export class TrackerFinderController {
                     this._log.debug(`Partial report received for URL : ${report.pageURL}`)
                 ),
                 map(removeURLParams),
-                bufferTime(config.input_buffer),
+                bufferTime(c.input_buffer),
                 map(this.deduplicatePartialReports),
-                switchMap(x => x)
+                switchMap(x => x),
+                map(this.sanitizeReport)
             )
             .subscribe((sanitizedReport) => {
                 topics.sanitizedPartialReportSubject.next(sanitizedReport);
             });
     }
 
+    private sanitizeReport(sanitizeReport: PartialReport): PartialReport {
+        // TODO : protect against SQL Injection
+        return sanitizeReport;
+    }
+
     private deduplicatePartialReports(deduplicatePartialReports: PartialReport[]): PartialReport[] {
+        // TODO : group by pageURL and deduplicate cookies
         return deduplicatePartialReports;
     }
 

@@ -1,7 +1,7 @@
 import { PartialReport } from "./model";
 
 const extractHostname = (url: string) => {
-  var hostname;
+  let hostname;
 
   if (url.indexOf("//") > -1) {
     hostname = url.split('/')[2];
@@ -11,7 +11,6 @@ const extractHostname = (url: string) => {
   }
 
   hostname = hostname.split(':')[0];
-  hostname = hostname.split('?')[0];
 
   return hostname;
 }

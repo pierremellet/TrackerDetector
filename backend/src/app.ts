@@ -50,19 +50,7 @@ class App {
       graphiql: true
     }));
 
-    const ws = createServer(app);
-    const server = ws.listen(config.port, () => {
-      new SubscriptionServer(
-        {
-          execute,
-          subscribe,
-          schema,
-        },
-        {
-          server: ws,
-          path: '/graphql',
-        },
-      );
+    const server = app.listen(config.port, () => {
 
       this._log.info(`🚀 Server Sub ready at ws://localhost:${config.port}/graphql`);
       this._log.info(`🚀 Server ready at http://localhost:${config.port}/graphql`);
