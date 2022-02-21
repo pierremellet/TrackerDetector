@@ -1,0 +1,56 @@
+<div *ngIf="app">
+ 
+    <header>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end float-end">
+            <button type="button" class="btn btn-primary  " (click)="submit()">Save Application</button>
+            <button type="button" class="btn btn-danger   " (click)="deleteApp()">
+                <i class="bi bi-trash"></i>
+                Delete</button>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb fs-2 lead">
+                <li class="breadcrumb-item"><a href="#" [routerLink]="['/applications']">Applications</a></li>
+                <li class="breadcrumb-item active">{{appForm.get('appName')?.value}}</li> 
+            </ol>
+
+        </nav>
+    </header>
+
+    <br />
+
+    <div class="card">
+        <div class="card-body">
+            <div class="card-text ">
+                <div [formGroup]="appForm">
+                    <div class="form-group">
+                        <label for="appName">Application Name</label>
+                        <input formControlName="appName" type="text" class="form-control" id="appName" required
+                            aria-describedby="emailHelp">
+                        <small id="appNameHelp" class="form-text text-muted">Required</small>
+                    </div> 
+                    <div class="form-group">
+                        <label for="appName">Description</label>
+                        <input formControlName="appDesc" type="text" class="form-control" id="appDesc" required>
+                        <small id="appDesc" class="form-text text-muted">Required</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <br />
+
+    <div class="card">
+        <div class="card-body">
+            <h3 class="card-title">Versions
+                <button type="submit" class="btn btn-primary btn-sm float-end bi bi-plus-lg"
+                    (click)="createVersion()"></button>
+            </h3>
+            <app-version-list (selectedVersion)="goToVersion($event)" [versions]="app.versions"></app-version-list>
+        </div>
+    </div>
+    <br />
+    <br />
+
+
+</div>

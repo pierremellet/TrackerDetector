@@ -1,0 +1,119 @@
+<div>
+    <div class="form-group row align-items-end mt-3">
+        <div class="col-md-9">
+            <label>Select an application</label>
+            <select [(ngModel)]="currentApplicationId" type="text" class="form-select"
+                (change)="onApplicationChange($event)">
+                <option [value]="appli.id" *ngFor="let appli of applications">{{appli.name}}</option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button *ngIf="currentApplication" (click)="update(currentApplication.id)"
+                class="btn btn-primary">Refresh</button>
+        </div>
+        <div class="col-md-2">
+            <button *ngIf="currentApplication" (click)="csvExport(currentApplication.id)" class="btn btn-success">Export
+                To CSV</button>
+        </div>
+    </div>
+    <br />
+    <div *ngIf="currentApplication">
+
+        <div class="card mb-5" *ngFor="let version of currentApplication.versions">
+            <div class="card-body">
+                <h3 class="card-title mb-5">Version : {{version.name}}
+                    <div class="btn-group float-end" role="group" aria-label="Basic example">
+                        <button (click)="cleanUp(version)" class="btn btn-danger ">Cleanup Version</button>
+                    </div>
+                </h3>
+                <div class="card-text">
+                    <ul class="list-group">
+
+                        <div class="accordion" [id]="'_'+index"
+                            *ngFor="let group of groupByURL(version.report.driftCookies)  | keyvalue; let index = index">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        [attr.data-bs-target]="'#_'+index+'target'" aria-expanded="true"
+                                        aria-controls="collapseOne">
+                                        URL : {{group.key}} ({{group.value.length}} cookies)
+                                    </button>
+                                </h2>
+                                <div [id]="'_'+index+'target'" class="accordion-collapse collapse"
+                                    aria-labelledby="headingOne" [attr.data-bs-parent]="'#_'+index">
+                                    <div class="accordion-body">
+                                        <ul class="list-group">
+                                            <li class="list-group-item" [class.hide]="c.hide"
+                                                *ngFor="let c of group.value; let i2 = index">
+                                                <img class="position-absolute top-0 end-0" style="height: 2rem; margin-right: 0.5rem; margin-top: 0.5rem;" [src]="logoService.findCompanyLogoURL(c.information.platform)" />
+                                                <b class="cookie-field">Name : {{c.name}}</b>                                                
+                                                <i class="cookie-field">Domain : {{c.domain}}</i>                                                
+                                                <i class="cookie-field" *ngIf="c.information.description">Description : {{c.information.description}}</i>                                                 
+                                                <i class="cookie-field" *ngIf="c.information.category">Suggested Category : {{c.information.category}}</i>                                               
+                                                <i class="cookie-field" *ngIf="c.information.gdpr"><a [href]="c.information.gdpr" >GDPR Policy</a></i>                                                 
+                                                <i class="cookie-field" *ngIf="c.duration !== 0">Expiration :
+                                                    {{secondsToMinutes(c.duration)}} min</i>
+                                                <i *ngIf="c.duration == 0">Expiration : Session</i>
+
+                                                <br />
+
+                                                <div class="btn-group dropend float-end">
+
+                                                    <button class="btn btn-primary"
+                                                        (click)="openModal(c.ressourceURLs)">Used by ressources ...</button>
+                                                    <button type="button" class="btn btn-secondary dropdown-toggle"
+                                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                                        Convert To Template
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <a class="btn dropdown-item"
+                                                            *ngFor="let cat of cookieCategories"
+                                                            (click)="convertToTemplate(version, c, cat.id)">{{cat.name}}</a>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+        <a href="https://clearbit.com">Logos provided by Clearbit</a>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" tabindex="-1" id="modal" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Used By
+                    Ressources</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group">
+                    <li class="list-group-item" *ngFor="let ctx of currentURLs">
+                        <i class="bi " [class.bi-send]="ctx.initiator == 'xmlhttprequest'"
+                            [class.bi-card-image]="ctx.initiator == 'img'"
+                            [class.bi-filetype-css]="ctx.initiator == 'css'"
+                            [class.bi-filetype-html]="ctx.initiator == 'navigation'"
+                            [class.bi-link]="ctx.initiator == 'link'"
+                            [class.bi-code-slash]="ctx.initiator == 'script'"></i> {{ctx.url}}
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

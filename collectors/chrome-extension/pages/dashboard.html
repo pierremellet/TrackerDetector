@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.6/build/pure-min.css"
+        integrity="sha384-Uu6IeWbM+gzNVXJcM9XV3SohHtmWE+3VGi496jvgX1jyvDTXfdK+rfZc8C1Aehk5" crossorigin="anonymous">
+    <link href="style.css" .css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="pure-g header grad"> 
+        
+        <div class="pure-u-1-5"> </div>
+        <div class="pure-u-3-5">Tracker Detector Collector Dashboard </div>
+        <div class="pure-u-1-5"> </div>
+        
+        
+    </div>
+
+    <div class="pure-g">
+        <div class="pure-u-1-5"> </div>
+
+        <div class="pure-u-3-5">
+            <div id="settings" class="pure-form pure-form-stacked">
+                <fieldset>
+                    <legend>Settings</legend>
+                    <div id="endpoint">
+                        <label for="endpoint-value">Endpoint used to post reports</label>
+                        <input type="text" class="pure-input-1" id="endpoint-value" />
+                        <span class="pure-form-message">This is a required field.</span>
+                    </div>
+                    <br/>
+                    <button id="settings-save" class="pure-button pure-button-primary">
+                        Update Config
+                    </button>
+                </fieldset>
+
+                <h3>Tracked Domains</h3>
+                <div id="domains">
+
+                </div>
+            </div>
+        </div>
+        <div class="pure-u-1-5"> </div>
+    </div>
+
+    <script type="text/javascript" src="../service.js"></script>
+    <script type="text/javascript" src="dashboard.js"></script>
+</body>
+
+</html>

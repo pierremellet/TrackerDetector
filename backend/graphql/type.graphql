@@ -1,0 +1,114 @@
+type Configuration {
+  domains: [Domain!]!
+  cookieCategories: [CookieCategory!]
+}
+type Domain {
+  id: ID
+  name: String
+  enable: Boolean
+}
+type CookieCategory {
+  id: ID
+  name: String
+  enable: Boolean
+}
+
+type PixelTemplate {
+  id: ID
+  uri: String
+  type: ApplicationURLType
+}
+
+"Configuration of tracked application"
+type Application {
+  "Unique Tech ID"
+  id: ID
+
+  "Application screen name"
+  name: String
+
+  "Application description"
+  description: String
+
+  "Application versions"
+  versions(filter: Int): [ApplicationVersion!]
+}
+type ApplicationReport {
+  driftCookies: [CookieInstance!]
+}
+
+enum ApplicationURLType {
+  PREFIX
+  EXACT
+}
+
+scalar Date
+
+# URL Inconnue
+type UnknowURL {
+  id: ID
+  url: String
+  created: Date
+}
+
+type ApplicationURL {
+  id: ID
+  domain: Domain!
+  path: String!
+  type: ApplicationURLType!
+  created: Date
+}
+type ApplicationVersion {
+  id: ID
+  name: String
+  enable: Boolean
+  urls: [ApplicationURL!]
+  cookies: [CookieTemplate!]
+  pixels: [PixelTemplate!]
+  report: ApplicationReport
+}
+type CookieTemplate {
+  id: ID
+  nameRegex: String
+  domain: String
+  path: String
+  httpOnly: Boolean
+  hostOnly: Boolean
+  secure: Boolean
+  session: Boolean
+  disabled: Boolean
+  expiration: String
+  description: String
+  category: CookieCategory!
+}
+type CookieInstance {
+  id: ID
+  name: String
+  domain: String
+  path: String
+  httpOnly: Boolean
+  hostOnly: Boolean
+  secure: Boolean
+  session: Boolean
+  timestamp: Int
+  duration: Float
+  pageURL: String
+  ressourceURLs: [Context]
+  information: CookieInstanceExtInformation
+}
+type CookieInstanceExtInformation {
+  platform: String
+  category: String
+  domain: String
+  description: String
+  retentionPeriod: String
+  dataController: String
+  gdpr: String
+  wildcardMatch: String
+}
+
+type Context {
+  id: ID
+  url: String
+  initiator: String
+}

@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Application {
+  id          Int                   @id @default(autoincrement())
+  name        String                @unique
+  description String                @default("")
+  versions    Application_Version[]
+}
+
+model Application_Version {
+  id                    Int               @id @default(autoincrement())
+  name                  String
+  application           Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId         Int
+  urls                  Application_URL[]
+  cookieTemplates       CookieTemplate[]
+  unknowCookieInstances CookieInstance[]
+  pixelTemplates        PixelTemplate[]
+  enable                Boolean           @default(true)
+
+  @@unique([name, applicationId])
+}
+
+enum URL_Type {
+  PREFIX
+  EXACT
+}
+
+model Application_URL {
+  id                   Int                  @id @default(autoincrement())
+  path                 String
+  type                 URL_Type
+  applicationVersion   Application_Version? @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
+  applicationVersionId Int?
+  domain               Domain               @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  domainId             Int
+  created              DateTime             @db.Timestamptz(3)
+
+  @@unique([path, domainId, applicationVersionId])
+}
+
+model UnknowURL {
+  id      Int      @id @default(autoincrement())
+  url     String   @unique
+  created DateTime @db.Timestamptz(3)
+}
+
+model CookieCategory {
+  id      Int              @id @default(autoincrement())
+  name    String           @unique
+  cookies CookieTemplate[]
+  enable  Boolean
+}
+
+model Domain {
+  id              Int               @id @default(autoincrement())
+  name            String            @unique
+  enable          Boolean
+  applicationURLs Application_URL[]
+}
+
+model PixelTemplate {
+  id                   Int                 @id @default(autoincrement())
+  uri                  String
+  type                 URL_Type
+  applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
+  applicationVersionId Int
+
+  @@unique([type, uri, applicationVersionId])
+}
+
+model CookieTemplate {
+  id                   Int                 @id @default(autoincrement())
+  nameRegex            String
+  domain               String?
+  path                 String?
+  httpOnly             Boolean?
+  hostOnly             Boolean?
+  secure               Boolean?
+  session              Boolean?
+  description          String?
+  expiration           String?
+  applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
+  applicationVersionId Int
+  category             CookieCategory      @relation(fields: [categoryId], references: [id])
+  categoryId           Int
+
+  @@unique([nameRegex, domain, applicationVersionId])
+}
+
+model CookieInstance {
+  id                   Int                 @id @default(autoincrement())
+  name                 String
+  domain               String
+  path                 String
+  httpOnly             Boolean
+  hostOnly             Boolean
+  secure               Boolean
+  session              Boolean
+  timestamp            Int
+  duration             Float?
+  pageURL              String
+  ressourceURLs        String[]
+  applicationVersion   Application_Version @relation(fields: [applicationVersionId], references: [id], onDelete: Cascade)
+  applicationVersionId Int
+
+  @@unique([name, domain, pageURL, applicationVersionId])
+}

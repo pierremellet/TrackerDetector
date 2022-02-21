@@ -1,0 +1,44 @@
+type Query {
+  "Entrypoint to list all applications"
+  allApplications: [Application!]!
+  findApplication(id: Int): Application
+  allCookieTemplates: [CookieTemplate!]!
+  allCookieInstances: [CookieInstance!]!
+  allUnknowURLs: [UnknowURL!]!
+  configuration: Configuration
+}
+type Mutation {
+  # Allow report creation
+  createPartialReport(report: String): String
+ 
+  createApplication(appName: String, appDesc: String): Application
+  updateApplication(appId: ID, appName: String, appDesc: String): Application
+  deleteApplication(appId: ID): Application
+
+  createApplicationVersion(appId: ID, versionName: String): ApplicationVersion
+  updateApplicationVersion(version: ApplicationVersionInput): ApplicationVersion
+  deleteApplicationVersion(versionId: ID!): ApplicationVersion
+
+  createCookieCategory(name: String!): CookieCategory
+  updateCookieCategory(cookieCategoryId: ID!, cookieCategoryName: String, cookieCategoryEnable: Boolean): CookieCategory
+
+  createDomain(domainName: String!): Domain
+  updateDomain(domainId: ID!, domainName: String, domainEnable: Boolean): Domain
+
+  createPixelTemplate(uri: String!, type: String!, versionId: ID!): PixelTemplate
+  updatePixelTemplate(pixelTemplateId: ID!, uri: String, type: String): PixelTemplate
+  deletePixelTemplate(pixelTemplateId: ID!): PixelTemplate
+
+  convertCookieInstanceToTemplate(
+    versionId: ID!
+    cookieCategoryId: ID!
+    cookieInstanceId: ID!
+  ): CookieTemplate
+
+  deleteCookieInstancesForVersion(versionId: ID): Int
+  linkUnknowURLToVersion(versionId: ID, unknowURLId: ID): ApplicationURL
+}
+type Subscription {
+  appVerCookieNotFounded(appVersionId: ID): CookieInstance
+  appCookieNotFounded(appId: ID): CookieInstance
+}

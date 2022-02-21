@@ -1,0 +1,26 @@
+<div *ngIf="!apps || apps.length == 0" class="alert alert-primary" role="alert">
+    No application, click on "Create Application"
+</div>
+
+<button class="btn btn-primary mb-2 float-end" (click)="createApplication()">Create Application</button>
+
+<header>
+  
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb fs-2 lead">
+            <li class="breadcrumb-item">Applications</li>
+         </ol>
+
+    </nav>
+</header>
+
+<button type="button" *ngFor="let app of apps" class="list-group-item list-group-item-action"
+    [routerLink]="['/applications', app.id]">
+
+    <div class="d-flex w-100 justify-content-between">
+        <h5 class="mb-1">{{app.name}}</h5>
+       </div>
+      <p class="mb-1">{{app.description}}</p >
+
+</button>
+

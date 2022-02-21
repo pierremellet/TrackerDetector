@@ -1,0 +1,16 @@
+<div *ngIf="!versions || versions.length == 0" class="alert alert-primary" role="alert">
+    No versions available, click '+' to add version
+</div>
+
+<ul class="list-group">
+
+    <button *ngFor="let ver of versions"
+        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+        (click)="selectedVersion.next(ver.id)">
+        {{ver.name}}
+        <span *ngIf="ver.enable" class="badge bg-primary rounded-pill bg-info">Enabled</span>
+        <span *ngIf="!ver.enable" class="badge bg-primary rounded-pill bg-secondary">Disabled</span>
+
+    </button>
+
+</ul>

@@ -1,0 +1,19 @@
+fieldset > legend {
+     font-size : 1rem;
+}
+
+ 
+
+.header{
+    background-color: #212529;
+    font-size: 1.5rem;
+    line-height: 3rem;
+    margin-bottom : 1rem;
+    color : white;
+    text-indent: 1rem;
+}
+
+.grad{
+    background: rgb(131,58,180);
+background: linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 100%);
+}

@@ -1,0 +1,13 @@
+.hide{
+    display: none;
+}
+
+.toggle:hover{
+    .hide {
+        display: block;
+    }
+}
+
+.cookie-field {
+    display: block;
+}

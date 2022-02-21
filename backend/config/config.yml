@@ -1,0 +1,6 @@
+endpoint: /graphql
+port: 3000
+input_buffer: 1
+log_level: "debug"
+graphql_schema_dir: ./graphql
+cookieDatabaseURL : "https://raw.githubusercontent.com/jkwakman/Open-Cookie-Database/master/open-cookie-database.csv"

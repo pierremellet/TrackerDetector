@@ -1,0 +1,226 @@
+<div *ngIf="version">
+    <header>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end float-end">
+            <button class="btn btn-primary" type="button" [class.disabled]="loading" (click)="save()"><i
+                    class="bi bi-save"></i>
+                Save
+                Version</button>
+            <a class="btn btn-info" target="_blank" [href]="'http://localhost:3000/notices/versions/'+version.id"><i class="bi bi-file-earmark-pdf"></i>
+                Notice </a>
+            <button class="btn btn-danger" type="button" [class.disabled]="loading" (click)="delete(version)">Delete
+                Version</button>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb fs-2 lead">
+                <li class="breadcrumb-item"><a href="#" [routerLink]="['/applications']">Applications</a></li>
+                <li class="breadcrumb-item"><a href="#" [routerLink]="['/applications', appId]">{{applicationName}}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{{version.name}}</li>
+            </ol>
+
+        </nav>
+
+    </header>
+    <div>
+        <div class="card">
+            <div class="card-body">
+                <div class="card-text ">
+                    <div class="form-group">
+                        <label for="versionName">Version Name</label>
+                        <input [(ngModel)]="version.name" type="text" class="form-control" id="versionName" required>
+                        <small id="versionNameHelp" class="form-text text-muted">Required</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Enable</label>
+                        <select [(ngModel)]="version.enable" type="text" class="form-select" required>
+                            <option value="true">true</option>
+                            <option value="false">false</option>
+                        </select>
+                        <small id="versionEnableHelp" class="form-text text-muted">Required</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br />
+
+        <div class="card">
+            <div class="card-body">
+                <div class="card-text ">
+                    <h3 class=" ">Tracked URL
+                        <button class="btn btn-primary btn-sm float-end bi bi-plus-lg" (click)="addURL()"></button>
+                    </h3>
+                    <div>
+                        <div *ngIf="!version.urls || version.urls.length == 0" class="alert alert-primary" role="alert">
+                            No URL, click '+' to add one
+                        </div>
+                        <div class="row mb-3" *ngIf="version.urls.length > 0">
+                            <div class="form-group col-md-1">
+
+                            </div>
+                            <div class="form-group col-md-4">
+                                Domain
+                            </div>
+                            <div class="form-group col-md-4">
+                                Path
+                            </div>
+                            <div class="form-group col-md-2">
+                                Type
+                            </div>
+                            <div class="form-group col-md-1">
+
+                            </div>
+                        </div>
+                        <div class="row mb-3" *ngFor="let url of version.urls" [class.d-none]="url.disabled">
+                            <div class="col-md-1">
+                                https://
+                            </div>
+                            <div class="col-md-4">
+                                <select [(ngModel)]="url.domain.id" class="form-select">
+                                    <option [value]="dom.id" *ngFor="let dom of domains">{{dom.name}}</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <input [(ngModel)]="url.path" type="text" class="form-control" id="versionName">
+                            </div>
+
+                            <div class="col-md-2">
+                                <select [(ngModel)]="url.type" class="form-select">
+                                    <option value="EXACT">EXACT</option>
+                                    <option value="PREFIX">PREFIX</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-1">
+                                <button class="btn btn-secondary" (click)="remove(url)"><i
+                                        class="bi bi-trash"></i></button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <br />
+
+        <div class="card  ">
+            <div class="card-body">
+                <div class="card-text ">
+                    <h3>Cookie Templates
+                        <button class="btn btn-primary btn-sm float-end bi bi-plus-lg " (click)="addCookie()"> </button>
+                    </h3>
+                    <div>
+                        <div *ngIf="!version.cookies || version.cookies.length == 0" class="alert alert-primary"
+                            role="alert">
+                            No cookies, click '+' to add one
+                        </div>
+                        <div *ngIf="version.cookies.length > 0" class="list-group list-group-flush">
+                            <div *ngFor="let cookie of version.cookies" class="list-group-item"
+                                [class.d-none]="cookie.disabled">
+                                <div class="row">
+                                    <div class="form-group col-md-2 fw-bold">
+                                        Name (Regex)
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        Domain
+                                    </div>
+                                    <div class="form-group col-md-1">
+                                        Path
+                                    </div>
+                                    <div class="form-group col-md-1">
+                                        HostOnly
+                                    </div>
+                                    <div class="form-group col-md-1">
+                                        HttpOnly
+                                    </div>
+                                    <div class="form-group col-md-1">
+                                        Secure
+                                    </div>
+                                    <div class="form-group col-md-1">
+                                        Session
+                                    </div>
+                                    <div class="col-md-2">
+                                        Category
+                                    </div>
+                                    <div class="col-md-1"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-md-2">
+                                        <input [(ngModel)]="cookie.nameRegex" type="text"
+                                            class="form-control text-success fw-bold">
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        <input [(ngModel)]="cookie.domain" type="text" class="form-control">
+                                    </div>
+                                    <div class="form-group col-md-1">
+                                        <input [(ngModel)]="cookie.path" type="text" class="form-control">
+                                    </div>
+                                    <div class="form-group col-md-1">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
+                                                [(ngModel)]="cookie.hostOnly">
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-1">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
+                                                [(ngModel)]="cookie.httpOnly">
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-1">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
+                                                [(ngModel)]="cookie.session">
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-1">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked"
+                                                [(ngModel)]="cookie.secure">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group col-md-2">
+                                        <select [(ngModel)]="cookie.category.id" class="form-select">
+                                            <option [value]="c.id" *ngFor="let c of cookieCategories">{{c.name}}
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-1">
+                                        <button class="btn btn-secondary" (click)="remove(cookie)"><i
+                                                class="bi bi-trash"></i></button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div>Description</div>
+                                        <textarea [(ngModel)]="cookie.description"
+                                            class="form-control">blabla</textarea>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div>Expiration</div>
+                                        <input [(ngModel)]="cookie.expiration" type="text" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <br />
+
+        <div class="card">
+            <div class="card-body">
+                <div class="card-text">
+                    <app-pixeltemplate-list [versionId]="version.id" [pixels]="version.pixels">
+                    </app-pixeltemplate-list>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

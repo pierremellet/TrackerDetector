@@ -1,0 +1,42 @@
+<ul class="list-group mt-3">
+    <li class="list-group-item" *ngFor="let url of urls">
+        <div class="d-flex w-100 justify-content-between">
+            <b class="mb-1">{{url.url}}</b>
+            <small>{{url.created}}</small>
+        </div>
+        <button (click)="currentUnknowURL(url)" class="btn btn-primary btn-sm float-end" data-bs-toggle="modal" data-bs-target="#applicationLink">Link
+            to an application</button>
+    </li>
+</ul>
+
+<!-- Modal -->
+<div class="modal fade" id="applicationLink" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Link unknow URL to an application</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label>Select an application</label>
+                <select type="text" class="form-select" (change)="onApplicationChange($event)">
+                    <option selected="selected">----</option>
+                    <option [value]="appli.id" *ngFor="let appli of applications">{{appli.name}}</option>
+                </select>
+                <div *ngIf="appVersions" class="mt-2">
+                    <label>Select a version</label>
+                    <select type="text" class="form-select" (change)="onVersionChange($event)">
+                        <option selected="selected">----</option>
+                        <option [value]="version.id" *ngFor="let version of appVersions">{{version.name}}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    (click)="currentAppId=undefined; currentVersionId=undefined; appVersions=undefined">Close</button>
+                <button type="button" class="btn btn-primary" [disabled]="!currentVersionId" data-bs-dismiss="modal" (click)="linkURLToVersion(currentAppId, currentVersionId, currentURL)">Link</button>
+            </div>
+        </div>
+    </div>
+</div>

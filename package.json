@@ -1,0 +1,25 @@
+{
+  "name": "trackerdetector",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "build:front":"npm run build --prefix ./frontend",
+    "build:back":"npm run build --prefix ./backend",
+    "install": "npm install --prefix ./frontend && npm install --prefix ./backend",
+    "build": "npm run build:front && npm run build:back"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pierremellet/TrackerDetector.git"
+  },
+  "author": "Pierre MELLET",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pierremellet/TrackerDetector/issues"
+  },
+  "homepage": "https://github.com/pierremellet/TrackerDetector#readme"
+}
