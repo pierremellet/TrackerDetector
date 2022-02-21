@@ -11,7 +11,7 @@ const generateNotice = async (versionId: number, res: any) => {
         include: {
             application: true,
             cookieTemplates: {
-                include : {
+                include: {
                     category: true
                 }
             },
@@ -19,11 +19,11 @@ const generateNotice = async (versionId: number, res: any) => {
     })
 
     const doc = new PDFDocument({ bufferPages: true });
-    let buffers: any[] = [];
+    const buffers: any[] = [];
     doc.on('data', buffers.push.bind(buffers));
     doc.on('end', () => {
 
-        let pdfData = Buffer.concat(buffers);
+        const pdfData = Buffer.concat(buffers);
         res.writeHead(200, {
             'Content-Length': Buffer.byteLength(pdfData),
             'Content-Type': 'application/pdf'
@@ -40,9 +40,9 @@ const generateNotice = async (versionId: number, res: any) => {
             `Domain : ${ct.domain}`,
             `Expiration : ${ct.expiration}`,
             `Category : ${ct.category.name}`,
-        ]) 
+        ])
         doc.fontSize(14).text(`\n\n`)
-     });
+    });
     doc.end();
 }
 

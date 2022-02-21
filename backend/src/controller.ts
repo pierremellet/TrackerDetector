@@ -52,7 +52,9 @@ export class TrackerFinderController {
                             created: new Date()
                         }
                     })
-                } catch (err) { }
+                } catch (err) { 
+                    this._log.trace(err);
+                }
             });
     }
 
@@ -62,7 +64,7 @@ export class TrackerFinderController {
 
     private handleDriftCookies() {
         topics.driftCookiesSubject.subscribe((drift) => {
-            var duration = drift.cookie.expirationDate ? drift.cookie.expirationDate - ((new Date().getTime()) / 1000) : 0;
+            const duration = drift.cookie.expirationDate ? drift.cookie.expirationDate - ((new Date().getTime()) / 1000) : 0;
             this.prisma.cookieInstance
                 .create({
                     data: {
@@ -88,7 +90,9 @@ export class TrackerFinderController {
                     this._log.debug(
                         `Save drift Cookie for version id(${drift.versionId}), with id(${cookie.id}) and name(${cookie.name})`
                     );
-                }).catch(() => { });
+                }).catch((err) => {
+                    this._log.trace(err);
+                 });
         });
     }
 
@@ -135,7 +139,7 @@ export class TrackerFinderController {
     }
 
     // TODO : externaliser vers une solution externe (ex: Kafka)
-    private handleIncommingReports(config: AppConfig) {
+    private handleIncommingReports(c: AppConfig) {
         topics.rawPartialReportSubject
             .pipe(
                 map(b64reportToJSON),
@@ -143,7 +147,7 @@ export class TrackerFinderController {
                     this._log.debug(`Partial report received for URL : ${report.pageURL}`)
                 ),
                 map(removeURLParams),
-                bufferTime(config.input_buffer),
+                bufferTime(c.input_buffer),
                 map(this.deduplicatePartialReports),
                 switchMap(x => x),
                 map(this.sanitizeReport)

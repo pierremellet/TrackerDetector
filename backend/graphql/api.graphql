@@ -38,7 +38,3 @@ type Mutation {
   deleteCookieInstancesForVersion(versionId: ID): Int
   linkUnknowURLToVersion(versionId: ID, unknowURLId: ID): ApplicationURL
 }
-type Subscription {
-  appVerCookieNotFounded(appVersionId: ID): CookieInstance
-  appCookieNotFounded(appId: ID): CookieInstance
-}

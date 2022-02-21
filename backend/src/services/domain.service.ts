@@ -37,4 +37,4 @@ export const updateDomain = (domaineId: number, domainName: string, domainEnable
         },
         data,
     });
-} 
+}

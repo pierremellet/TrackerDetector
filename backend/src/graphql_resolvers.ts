@@ -193,11 +193,6 @@ export default class GraphqlAPI {
                         }
                     })
                 }
-            },
-            Subscription: {
-                appCookieNotFounded: {
-                    subscribe: (parent: any, args: any, context: any) => pubsub.asyncIterator(args.appId)
-                }
             }
         };
     }

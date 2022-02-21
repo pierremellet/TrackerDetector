@@ -7,7 +7,7 @@ import prisma from "../database";
 const _log = rootLogger(config).getChildLogger({
     name: "CookieCategoryService",
 });
- 
+
 
 export const createCookieCategory = (name: string): Promise<CookieCategory> => {
     if (name === undefined || name.length === 0) {
@@ -37,6 +37,5 @@ export const updateCookieCategory = async (cookieCategoryId: number, cookieCateg
         },
         data,
     });
-
     return cookie;
 }

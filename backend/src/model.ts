@@ -35,19 +35,16 @@ export class DriftCookie {
 
 }
 
-export class TrackedCookie {
+export type TrackedCookie = {
 
-    constructor(
-        public name: string,
-        public domain: string,
-        public path: string,
-        public httpOnly: boolean,
-        public hostOnly: boolean,
-        public secure: boolean,
-        public session: boolean,
-        public timestamp: number,
-        public expirationDate: number | null,
-        public duration: number | null) {
-
-    }
+    name: string,
+    domain: string,
+    path: string,
+    httpOnly: boolean,
+    hostOnly: boolean,
+    secure: boolean,
+    session: boolean,
+    timestamp: number,
+    expirationDate: number | null,
+    duration: number | null
 }
