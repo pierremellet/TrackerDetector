@@ -11,9 +11,9 @@ export class GraphQLService {
 
   constructor(private http: HttpClient) { }
 
-  sendQuery(queyString: string): Observable<any> {
+  sendQuery(payload: string): Observable<any> {
     return this.http.post(environment.graphQLEndpoint, {
-      "query": queyString,
+      "query": payload,
       "operationName": null,
       "variables": {}
     }) 
