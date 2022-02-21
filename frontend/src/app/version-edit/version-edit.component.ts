@@ -4,6 +4,7 @@ import { map } from 'rxjs';
 import { GraphQLService } from '../graph-ql.service';
 import { Domain, CookieCategories } from '../model';
 import { ToastService } from '../toast.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-version-edit',
@@ -20,7 +21,7 @@ export class VersionEditComponent implements OnInit {
   loading = false;
   domains: Domain[] = [];
   cookieCategories: CookieCategories[] = [];
-
+ 
 
   constructor(private route: ActivatedRoute, private router: Router, private gql: GraphQLService, private toast: ToastService) { }
 

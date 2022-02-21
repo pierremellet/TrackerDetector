@@ -10,7 +10,8 @@ import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import GQLSetup from './graphql_resolvers';
- import config from './config';
+import config from './config';
+import { generateNotice } from './services/notice.service';
 class App {
 
   private _log = rootLogger(config).getChildLogger({ name: "TrackerFinderController" });
@@ -22,7 +23,7 @@ class App {
     const prisma = new PrismaClient();
 
     const controller = new TrackerFinderController(prisma);
- 
+
     const gqlController = new GQLSetup(pubsub, prisma, controller);
     const typeDefs = gqlController.typeDefs;
     const resolvers = gqlController.resolvers;
@@ -36,6 +37,12 @@ class App {
     app.use(cors());
     app.get('/', (req: any, res: any) => {
       res.send('TrackerDetectorServer');
+    })
+
+    app.get('/notices/versions/:versionId', (req: any, res: any) => {
+      const versionId = parseInt(req.params.versionId, 10);
+
+      generateNotice(versionId, res);
     })
 
     app.use('/graphql', graphqlHTTP({

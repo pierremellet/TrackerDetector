@@ -27,6 +27,9 @@ type Application {
   "Application screen name"
   name: String
 
+  "Application description"
+  description: String
+
   "Application versions"
   versions(filter: Int): [ApplicationVersion!]
 }

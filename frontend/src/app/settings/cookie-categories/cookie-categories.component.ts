@@ -42,7 +42,11 @@ export class CookieCategoriesComponent implements OnInit {
     `;
 
     this.gql.sendQuery(createCookieQuery)
-      .subscribe(() => this.ngOnInit());
+      .subscribe(() => {
+        this.newCookieCategoryName = "";
+        this.ngOnInit()
+      });
+
   }
 
   saveCookieCategory(cat: Category) {

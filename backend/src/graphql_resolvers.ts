@@ -1,12 +1,15 @@
 import { Application, CookieInstance, PrismaClient } from "@prisma/client";
 import { TrackerFinderController } from "./controller";
 import { PubSub } from 'graphql-subscriptions';
-import { AppConfig, extractHostname } from "./utils";
 import * as fs from 'fs';
 import topics from './topics';
 import * as path from 'path';
 import config from "./config";
 import { findCookieInformationByName } from "./extCookieDatabase";
+import { updatePixelTemplate, createPixelTemplate, deletePixelTemplate, deleteCookieInstancesForVersion, updateApplicationVersion, createApplicationVersion, deleteApplicationVersion } from "./services/applicationVersion.service";
+import { createApplication, deleteApplication, updateApplication } from "./services/application.service";
+import { createCookieCategory, updateCookieCategory } from "./services/cookieCategory.service";
+import { createDomain, updateDomain } from "./services/domain.service";
 export default class GraphqlAPI {
 
     public typeDefs: any[];
@@ -19,53 +22,53 @@ export default class GraphqlAPI {
         this.resolvers = {
             Mutation: {
                 updatePixelTemplate: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.applicationVersionController.updatePixelTemplate(parseInt(params.pixelTemplateId, 10), params.uri, params.type);
+                    return await updatePixelTemplate(parseInt(params.pixelTemplateId, 10), params.uri, params.type);
                 },
                 createPixelTemplate: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.applicationVersionController.createPixelTemplate(params.uri, params.type, parseInt(params.versionId, 10));
+                    return await createPixelTemplate(params.uri, params.type, parseInt(params.versionId, 10));
                 },
                 deletePixelTemplate: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.applicationVersionController.deletePixelTemplate(parseInt(params.pixelTemplateId, 10));
+                    return await deletePixelTemplate(parseInt(params.pixelTemplateId, 10));
                 },
                 createDomain: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.domainController.createDomain(params.domainName);
+                    return await createDomain(params.domainName);
                 },
                 updateDomain: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.domainController.updateDomain(parseInt(params.domainId, 10), params.domainName, params.domainEnable);
+                    return await updateDomain(parseInt(params.domainId, 10), params.domainName, params.domainEnable);
                 },
                 createCookieCategory: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.cookieCategoryController.createCookieCategory(params.name);
+                    return await createCookieCategory(params.name);
                 },
                 updateCookieCategory: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.cookieCategoryController.updateCookieCategory(parseInt(params.cookieCategoryId, 10), params.cookieCategoryName, params.cookieCategoryEnable);
+                    return await updateCookieCategory(parseInt(params.cookieCategoryId, 10), params.cookieCategoryName, params.cookieCategoryEnable);
                 },
                 convertCookieInstanceToTemplate: async (_: any, params: any): Promise<any> => {
                     return await this.controller.convertCookieInstanceToTemplate(parseInt(params.versionId, 10), parseInt(params.cookieCategoryId, 10), parseInt(params.cookieInstanceId, 10));
                 },
                 deleteCookieInstancesForVersion: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.applicationVersionController.deleteCookieInstancesForVersion(parseInt(params.versionId, 10));
+                    return await deleteCookieInstancesForVersion(parseInt(params.versionId, 10));
                 },
                 updateApplication: async (_: any, params: any): Promise<any> => {
-                    return await this.controller.applicationController.updateApplication(parseInt(params.appId, 10), params.appName);
+                    return await updateApplication(parseInt(params.appId, 10), params.appName, params.appDesc);
                 },
                 deleteApplication: async (_: any, params: any): Promise<Application> => {
-                    return await this.controller.applicationController.deleteApplication(parseInt(params.appId, 10));
+                    return await deleteApplication(parseInt(params.appId, 10));
                 },
                 updateApplicationVersion: async (_: any, params: any) => {
-                    return await this.controller.applicationVersionController.updateApplicationVersion(params.version);
+                    return await updateApplicationVersion(params.version);
                 },
                 deleteApplicationVersion: async (_: any, params: any) => {
-                    return await this.controller.applicationVersionController.deleteApplicationVersion(parseInt(params.versionId, 10));
+                    return await deleteApplicationVersion(parseInt(params.versionId, 10));
                 },
                 createApplicationVersion: async (_: any, params: any) => {
-                    return await this.controller.applicationVersionController.createApplicationVersion(parseInt(params.appId, 10), params.versionName);
+                    return await createApplicationVersion(parseInt(params.appId, 10), params.versionName);
                 },
                 createPartialReport: (_: any, params: any) => {
                     topics.rawPartialReportSubject.next(params.report);
                     return "ok";
                 },
                 createApplication: async (_: any, params: any) => {
-                    return await this.controller.applicationController.createApplication(params.appName);
+                    return await createApplication(params.appName, params.appDesc);
                 },
                 linkUnknowURLToVersion: async (_: any, params: any) => {
                     return await this.controller.linkUnknowURLToVersion(parseInt(params.versionId, 10), parseInt(params.unknowURLId, 10))
@@ -164,7 +167,7 @@ export default class GraphqlAPI {
                 })
             },
             CookieInstance: {
-                information: (cookieInstance: any) =>  {
+                information: (cookieInstance: any) => {
                     return findCookieInformationByName(cookieInstance.name).then(c => {
                         return {
                             platform: c?.Platform,

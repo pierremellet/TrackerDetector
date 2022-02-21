@@ -11,8 +11,8 @@ type Mutation {
   # Allow report creation
   createPartialReport(report: String): String
  
-  createApplication(appName: String): Application
-  updateApplication(appId: ID, appName: String): Application
+  createApplication(appName: String, appDesc: String): Application
+  updateApplication(appId: ID, appName: String, appDesc: String): Application
   deleteApplication(appId: ID): Application
 
   createApplicationVersion(appId: ID, versionName: String): ApplicationVersion

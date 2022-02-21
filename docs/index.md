@@ -1,37 +1,71 @@
 ## Tracker Detecor
 
-You can use the [editor on GitHub](https://github.com/pierremellet/TrackerDetector/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+Outillage permettant de surveiller les trackers web utilisés par des applications Web
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+### Features
 
-### Markdown
+* Détection des trackers utilisé par des applications web
+* Comparaison des trackers détectés avec un référentiel de trackers attendus
+* Génération d'un PDF de synthèse des trackers utilisés
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+### Trackers supportés
 
-```markdown
-Syntax highlighted code block
+* Cookies
+* Pixel (wip)
+* Local storage (todo)
+* Redirection (todo)
+* Fingerprint (todo)
 
-# Header 1
-## Header 2
-### Header 3
+### Installation pour test
+ 
+A la racine du projet :
 
-- Bulleted
-- List
+    docker-compose up
+### Installation dans un context de dev
 
-1. Numbered
-2. List
+#### Database
 
-**Bold** and _Italic_ and `Code` text
+A la racine, avec Doker Compose :
 
-[Link](url) and ![Image](src)
-```
+    docker-compose run -p 5432:5432 -d postgres
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
+#### Frontend
 
-### Jekyll Themes
+A la racine du répertoire **frontend**
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/pierremellet/TrackerDetector/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+    npm install
+    ng serve
 
-### Support or Contact
+L'IHM est ensuite disponible à cette adresse : http://localhost:4200
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+#### Backend
+
+A la racine du répertoire **bakend**
+
+    npm install
+    npx prisma generate
+    npx prisma db push
+    npm run start:dev
+
+
+L'API est ensuite disponible à cette adresse : http://localhost:3000/graphql
+
+
+### Collecteurs
+
+Les collecteurs sont des applications en charge de l'observation des trackers exposés par les applications
+
+#### Collecteur Extension Chrome
+
+L'extension Chrome permet d'observer le contenu d'onglets d'un navigateur dans le but de détécter la présence de traçeurs, produire un rapport et envoyer vers le serveur des rapports de détection.
+Depuis le gestionnaire d'extension de Chrome, activer le mode dev afin de pouvoir charger une extension "non empaquetée" et selectionner ensuite le répertoire :
+
+    /collectors/chrome-extension
+
+#### Collecteur Agent JS (wip)
+
+L'agent JS permet de collecter des traçeurs dans un contexte où l'utilisation d'un extension de navigateur ne serait pas déployable.
+
+La mise en place de l'agent JS implique d'exposer le code source de cet agent sur un serveur http avec le même domaine que celui des applications à observer.
+
+

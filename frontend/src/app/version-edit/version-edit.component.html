@@ -1,8 +1,12 @@
 <div *ngIf="version">
     <header>
         <div class="d-grid gap-2 d-md-flex justify-content-md-end float-end">
-            <button class="btn btn-primary" type="button" [class.disabled]="loading" (click)="save()">Save
+            <button class="btn btn-primary" type="button" [class.disabled]="loading" (click)="save()"><i
+                    class="bi bi-save"></i>
+                Save
                 Version</button>
+            <a class="btn btn-info" target="_blank" [href]="'http://localhost:3000/notices/versions/'+version.id"><i class="bi bi-file-earmark-pdf"></i>
+                Notice </a>
             <button class="btn btn-danger" type="button" [class.disabled]="loading" (click)="delete(version)">Delete
                 Version</button>
         </div>
@@ -25,7 +29,7 @@
                         <label for="versionName">Version Name</label>
                         <input [(ngModel)]="version.name" type="text" class="form-control" id="versionName" required>
                         <small id="versionNameHelp" class="form-text text-muted">Required</small>
-                    </div> 
+                    </div>
                     <div class="form-group">
                         <label>Enable</label>
                         <select [(ngModel)]="version.enable" type="text" class="form-select" required>

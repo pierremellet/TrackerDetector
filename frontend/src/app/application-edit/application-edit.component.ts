@@ -13,7 +13,8 @@ import { ToastService } from '../toast.service';
 export class ApplicationEditComponent implements OnInit {
 
   appForm = new FormGroup({
-    appName: new FormControl('', [Validators.required])
+    appName: new FormControl('', [Validators.required]),
+    appDesc: new FormControl('', [Validators.required])
   });
 
   id: string | null = "";
@@ -46,8 +47,9 @@ export class ApplicationEditComponent implements OnInit {
   submit() {
     const queyString = `
     mutation {
-      updateApplication(appId: ${this.app.id}, appName: "${this.appForm.get('appName')?.value}"){
+      updateApplication(appId: ${this.app.id}, appName: "${this.appForm.get('appName')?.value}", appDesc: "${this.appForm.get('appDesc')?.value}"){
         id
+        description
         name
       }
     }`;
@@ -67,6 +69,7 @@ export class ApplicationEditComponent implements OnInit {
           findApplication(id: ${id}){
             id
             name
+            description
             versions {
               id
               name
@@ -79,6 +82,7 @@ export class ApplicationEditComponent implements OnInit {
       ).subscribe(app => {
         this.app = app;
         this.appForm.get('appName')?.setValue(app.name);
+        this.appForm.get('appDesc')?.setValue(app.description);
        })
     }
   }

@@ -31,8 +31,7 @@ export class DomainsComponent implements OnInit {
     this.gql.sendQuery(query)
       .pipe(map(resp => resp.data.configuration.domains))
       .subscribe(doms => {
-        this.domains = doms;
-        console.log(this.domains);
+        this.domains = doms; 
       });
   }
 
@@ -43,7 +42,10 @@ export class DomainsComponent implements OnInit {
       }
     }`;
 
-    this.gql.sendQuery(query).subscribe(() => this.ngOnInit());
+    this.gql.sendQuery(query).subscribe(() => {
+      this.ngOnInit();
+      this.newDomainName = "";
+    });
   }
 
   saveDomain(dom: Domain) {

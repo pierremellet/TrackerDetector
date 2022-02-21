@@ -15,5 +15,12 @@
 </header>
 
 <button type="button" *ngFor="let app of apps" class="list-group-item list-group-item-action"
-    [routerLink]="['/applications', app.id]">{{app.name}}</button>
+    [routerLink]="['/applications', app.id]">
+
+    <div class="d-flex w-100 justify-content-between">
+        <h5 class="mb-1">{{app.name}}</h5>
+       </div>
+      <p class="mb-1">{{app.description}}</p >
+
+</button>
 

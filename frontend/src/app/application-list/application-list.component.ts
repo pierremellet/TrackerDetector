@@ -18,6 +18,7 @@ export class ApplicationListComponent implements OnInit {
     {
       allApplications{
         name
+        description
         id
       }
     }
@@ -31,7 +32,7 @@ export class ApplicationListComponent implements OnInit {
   createApplication(){
     const queyString = `
     mutation{
-      createApplication(appName: "My New Application"){
+      createApplication(appName: "My New Application", appDesc:"This is my new application"){
         id
       }
     }

@@ -1,14 +1,10 @@
 import { Application, Application_URL, Application_Version, CookieTemplate, Domain, PrismaClient } from "@prisma/client";
-import { concatMap, map, switchMap, tap, windowTime, } from "rxjs";
+import { bufferTime, concatMap, map, Observable, switchMap, tap, windowTime, } from "rxjs";
 import rootLogger from "./logger";
 import { AppConfig, b64reportToJSON, removeURLParams } from "./utils";
 import { PartialReport } from "./model";
 import topics from "./topics";
-import ApplicationController from "./controllers/application.controller";
 import { URL } from "url";
-import DomainController from "./controllers/domain.controller";
-import ApplicationVersionController from "./controllers/applicationVersion.controller";
-import CookieCategoryController from "./controllers/cookieCategory.controller";
 import config from "./config";
 import { findCookieInformationByName } from "./extCookieDatabase";
 
@@ -22,17 +18,8 @@ export class TrackerFinderController {
         domain: Domain;
     })[] = [];
 
-    public applicationController: ApplicationController;
-    public domainController: DomainController;
-    public applicationVersionController: ApplicationVersionController;
-    public cookieCategoryController: CookieCategoryController;
 
     constructor(private prisma: PrismaClient) {
-
-        this.applicationController = new ApplicationController(config, prisma);
-        this.domainController = new DomainController(config, prisma);
-        this.applicationVersionController = new ApplicationVersionController(config, prisma);
-        this.cookieCategoryController = new CookieCategoryController(config, prisma);
 
         // Index version URL prefix
         this.updateURLIndexOnApplicationVersionUpdate();
@@ -52,7 +39,8 @@ export class TrackerFinderController {
     private handleUnknowURL() {
         topics.unknowURLSubject
             .pipe(
-                windowTime(1000),
+                bufferTime(config.input_buffer),
+                map(this.deduplicateURLs),
                 switchMap(u => u)
             )
             .subscribe(async (u) => {
@@ -66,6 +54,10 @@ export class TrackerFinderController {
                     })
                 } catch (err) { }
             });
+    }
+
+    private deduplicateURLs(deduplicate:  string[]): string[] {
+        return deduplicate;
     }
 
     private handleDriftCookies() {
@@ -150,11 +142,18 @@ export class TrackerFinderController {
                 tap((report) =>
                     this._log.debug(`Partial report received for URL : ${report.pageURL}`)
                 ),
-                map(removeURLParams)
+                map(removeURLParams),
+                bufferTime(config.input_buffer),
+                map(this.deduplicatePartialReports),
+                switchMap(x => x)
             )
             .subscribe((sanitizedReport) => {
                 topics.sanitizedPartialReportSubject.next(sanitizedReport);
             });
+    }
+
+    private deduplicatePartialReports(deduplicatePartialReports: PartialReport[]): PartialReport[] {
+        return deduplicatePartialReports;
     }
 
     private updateURLIndexOnApplicationVersionUpdate() {
@@ -203,8 +202,8 @@ export class TrackerFinderController {
                     secure: cookieInstance.secure,
                     httpOnly: cookieInstance.httpOnly,
                     session: cookieInstance.session,
-                    description : cookieInformation?.Description,
-                    expiration : cookieInformation?.["Retention period"],
+                    description: cookieInformation?.Description,
+                    expiration: cookieInformation?.["Retention period"],
                     applicationVersion: {
                         connect: {
                             id: versionId,
