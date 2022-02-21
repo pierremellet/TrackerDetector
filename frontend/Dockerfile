@@ -1,7 +1,7 @@
 FROM node:17-alpine as build
 WORKDIR /usr/local/app
 COPY ./ /usr/local/app/
-RUN npm install
+RUN npm ci
 RUN npm run build
  
 

@@ -1,0 +1,145 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trackerdetector-backend
+  labels:
+    app: trackerdetector-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trackerdetector-backend
+  template:
+    metadata:
+      labels:
+        app: trackerdetector-backend
+    spec:
+      containers:
+      - name: backend
+        image: backend
+        env:
+          - name: DATABASE_URL
+            value: postgresql://root:root@trackerdetector-database-service.default.svc.cluster.local:5432/tracker-detector 
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trackerdetector-database
+  labels:
+    app: trackerdetector-database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trackerdetector-database
+  template:
+    metadata:
+      labels:
+        app: trackerdetector-database
+    spec:
+      containers:
+      - name: postgres
+        image: postgres
+        env:
+          - name: POSTGRES_PASSWORD
+            value: root
+          - name: POSTGRES_USER
+            value: root
+          - name: POSTGRES_DB
+            value: tracker-detector 
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trackerdetector-frontend
+  labels:
+    app: trackerdetector-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trackerdetector-frontend
+  template:
+    metadata:
+      labels:
+        app: trackerdetector-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: frontend
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trackerdetector-frontend-service
+spec:
+  selector:
+    app: trackerdetector-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80     
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trackerdetector-backend-service
+spec:
+  selector:
+    app: trackerdetector-backend
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000   
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trackerdetector-database-service
+spec:
+  selector:
+    app: trackerdetector-database
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432   
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: trackerdetector-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  defaultBackend:
+    service:
+      name: nginx-service
+      port:
+        number: 80
+  rules:
+  - http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: trackerdetector-backend-service
+            port:
+              number: 3000
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: trackerdetector-frontend-service
+            port:
+              number: 80
