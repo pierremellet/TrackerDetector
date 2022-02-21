@@ -11,7 +11,6 @@ const extractHostname = (url: string) => {
   }
 
   hostname = hostname.split(':')[0];
-  hostname = hostname.split('?')[0];
 
   return hostname;
 }

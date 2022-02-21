@@ -56,7 +56,7 @@ export class TrackerFinderController {
             });
     }
 
-    private deduplicateURLs(deduplicate:  string[]): string[] {
+    private deduplicateURLs(deduplicate: string[]): string[] {
         return deduplicate;
     }
 
@@ -134,7 +134,7 @@ export class TrackerFinderController {
             });
     }
 
-
+    // TODO : externaliser vers une solution externe (ex: Kafka)
     private handleIncommingReports(config: AppConfig) {
         topics.rawPartialReportSubject
             .pipe(
@@ -145,14 +145,21 @@ export class TrackerFinderController {
                 map(removeURLParams),
                 bufferTime(config.input_buffer),
                 map(this.deduplicatePartialReports),
-                switchMap(x => x)
+                switchMap(x => x),
+                map(this.sanitizeReport)
             )
             .subscribe((sanitizedReport) => {
                 topics.sanitizedPartialReportSubject.next(sanitizedReport);
             });
     }
 
+    private sanitizeReport(sanitizeReport: PartialReport): PartialReport {
+        // TODO : protect against SQL Injection
+        return sanitizeReport;
+    }
+
     private deduplicatePartialReports(deduplicatePartialReports: PartialReport[]): PartialReport[] {
+        // TODO : group by pageURL and deduplicate cookies
         return deduplicatePartialReports;
     }
 
