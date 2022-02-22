@@ -1,3 +1,7 @@
+<div *ngIf="!urls ||urls.length == 0" >
+    <div class="alert alert-primary mt-5">No unrecognized URLs detected</div>
+</div>
+
 <ul class="list-group mt-3">
     <li class="list-group-item" *ngFor="let url of urls">
         <div class="d-flex w-100 justify-content-between">
