@@ -21,7 +21,7 @@ export class VersionEditComponent implements OnInit {
   loading = false;
   domains: Domain[] = [];
   cookieCategories: CookieCategories[] = [];
- 
+
 
   constructor(private route: ActivatedRoute, private router: Router, private gql: GraphQLService, private toast: ToastService) { }
 
@@ -39,6 +39,10 @@ export class VersionEditComponent implements OnInit {
     this.version.cookies.push({
       id: undefined,
       nameRegex: ".*",
+      hostOnly: true,
+      httpOnly: true,
+      secure: true,
+      session: true,
       category: {
         id: undefined
       },
@@ -169,6 +173,8 @@ export class VersionEditComponent implements OnInit {
           hostOnly: ${cookie.hostOnly}
           secure: ${cookie.secure}
           session: ${cookie.session}
+          description: "${cookie.description}"
+          expiration: "${cookie.expiration}"
           category: ${cookie.category.id}
         }`
     });
@@ -194,6 +200,11 @@ export class VersionEditComponent implements OnInit {
           }
           type
         }
+        pixels{
+          id
+          uri
+          type
+        }
         cookies{
           id
           nameRegex
@@ -202,7 +213,9 @@ export class VersionEditComponent implements OnInit {
           httpOnly
           hostOnly
           secure
-          session
+          session          
+          description
+          expiration
           category{
             id
             name
@@ -221,9 +234,6 @@ export class VersionEditComponent implements OnInit {
         this.toast.show("Application Version", "Updated !");
       })
   }
-
-
-
 
 
 }

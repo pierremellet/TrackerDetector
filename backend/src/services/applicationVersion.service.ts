@@ -103,6 +103,8 @@ export const updateApplicationVersion = async (version: any): Promise<Applicatio
                 hostOnly: u.hostOnly,
                 secure: u.secure,
                 session: u.session,
+                expiration: u.expiration,
+                description: u.description,
                 categoryId: u.category
             };
             return {

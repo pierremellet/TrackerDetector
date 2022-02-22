@@ -9,6 +9,8 @@ input CookieTemplateInput {
   secure: Boolean
   session: Boolean
   disabled: Boolean
+  description: String
+  expiration: String
   category: Int 
 }
  
